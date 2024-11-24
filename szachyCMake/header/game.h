@@ -6,5 +6,3 @@ extern char check; //1-white 2-black
 
 void StartNewGame();
 void NextRound();
-
-void Check(char color);

@@ -28,6 +28,7 @@ void restoreTerminal() {
 
 
 const wchar_t* chess_pieces_characters[13] = {L"0m ",L"255m♚", L"255m♛", L"255m♜", L"255m♝", L"255m♞", L"255m♟", L"0m♚", L"0m♛", L"0m♜", L"0m♝", L"0m♞", L"0m♟"};
+//const wchar_t* chess_pieces_characters[13] = {L"0m ", L"0m♚", L"0m♛", L"0m♜", L"0m♝", L"0m♞", L"0m♟",L"255m♚", L"255m♛", L"255m♜", L"255m♝", L"255m♞", L"255m♟"};
 //const wchar_t* chess_pieces_characters[13] = {L" ",L"♔", L"♕", L"♖", L"♗", L"♘", L"♙", L"♚", L"♛", L"♜", L"♝", L"♞", L"♟"};
 
 char update = 1;
@@ -199,4 +200,9 @@ void interface_showLegalMovesOfCurrentPiece() {
 void interface_printMenu() {
 	wprintf(L"1-Start new game\n");
 	wprintf(L"ESC-Exit\n");
+}
+
+void interface_showWin(char color) {
+	moveCursorToBoard(4, 12);
+	wprintf(L"Win for the %ls!", color ? L"white" : L"black");
 }

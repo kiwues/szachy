@@ -14,9 +14,13 @@ void StartNewGame() {
 }
 
 void NextRound() {
+	if (checkIfCheck(round ? 0 : 8))
+	{
+		check = round + 1;
+		if (checkIfCheckmateOrStalemateWhileChecked(round ? 0 : 8)) {
+			interface_showWin(round ? 0 : 8);
+			gameStarted = 0;
+		}
+	}
 	round = !round;
-}
-
-void Check(char color) {
-	check = color;
 }

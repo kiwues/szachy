@@ -6,13 +6,20 @@
 char boardRepresentation[4][8] = { 0 };
 
 //x = chessPiece2<<4|chessPiece1
-const char startingBoard[4][8] = 
+const char startingBoard[4][8] =
 {
 	{53,102,0,0,0,0,238,189}, 
 	{66,102,0,0,0,0,238,202},
 	{20,102,0,0,0,0,238,156},
 	{83,102,0,0,0,0,238,219}
 };
+/*const char startingBoard[4][8] =
+{
+	{189,238,0,0,0,0,102,53}, 
+	{202,238,0,0,0,0,102,66},
+	{156,238,0,0,0,0,102,20},
+	{219,238,0,0,0,0,102,83}
+};*/
 
 char xPicked=-1, yPicked;
 
@@ -40,49 +47,49 @@ void getLegalMovesWithoutCheck(char xPick, char yPick,char* moveBitMask,char* ca
 	char pieceColor = piece & BLACK;
     if ((piece & CHESSMASK) == KNIGHT) {
 		char pieceOnBoard;
-		if (xPick  < 6 && yPick  < 6 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick + 1)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  < 6 && yPick  < 6 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick + 1)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 1] |= 128 >> (xPick + 2);
 			else
 				captureBitMask[yPick + 1] |= 128 >> (xPick + 2);
 		}
-		if (xPick  < 68 && yPick  > 0 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick - 1)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  < 68 && yPick  > 0 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick - 1)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 1] |= 128 >> (xPick + 2);
 			else
 				captureBitMask[yPick - 1] |= 128 >> (xPick + 2);
 		}
-		if (xPick  > 1 && yPick  < 6 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick + 1)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  > 1 && yPick  < 6 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick + 1)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 1] |= 128 >> (xPick - 2);
 			else
 				captureBitMask[yPick + 1] |= 128 >> (xPick - 2);
 		}
-		if (xPick  > 1 && yPick  > 0 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick - 1)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  > 1 && yPick  > 0 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick - 1)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 1] |= 128 >> (xPick - 2);
 			else
 				captureBitMask[yPick - 1] |= 128 >> (xPick - 2);
 		}
-		if (xPick  < 7 && yPick  < 5 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick + 2)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  < 7 && yPick  < 5 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick + 2)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 2] |= 128 >> (xPick + 1);
 			else
 				captureBitMask[yPick + 2] |= 128 >> (xPick + 1);
 		}
-		if (xPick  < 7 && yPick  > 1 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick - 2)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  < 7 && yPick  > 1 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick - 2)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 2] |= 128 >> (xPick + 1);
 			else
 				captureBitMask[yPick - 2] |= 128 >> (xPick + 1);
 		}
-		if (xPick  > 0 && yPick  < 5 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick + 2)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  > 0 && yPick  < 5 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick + 2)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 2] |= 128 >> (xPick - 1);
 			else
 				captureBitMask[yPick + 2] |= 128 >> (xPick - 1);
 		}
-		if (xPick  > 0 && yPick  > 1 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick - 2)) == 0 || !(pieceOnBoard & pieceColor))) {
+		if (xPick  > 0 && yPick  > 1 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick - 2)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 2] |= 128 >> (xPick - 1);
 			else
@@ -167,49 +174,49 @@ void getLegalMoves(char xPick, char yPick, char* moveBitMask, char* captureBitMa
 	//char counterPieceColor = ~pieceColor&BLACK;
 	if ((piece & CHESSMASK) == KNIGHT) {
 		char pieceOnBoard;
-		if (xPick < 6 && yPick < 6 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick + 1)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 2, yPick + 1)) {
+		if (xPick < 6 && yPick < 6 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick + 1)) == 0 ||  pieceColor!=(pieceOnBoard&BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 2, yPick + 1)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 1] |= 128 >> (xPick + 2);
 			else
 				captureBitMask[yPick + 1] |= 128 >> (xPick + 2);
 		}
-		if (xPick < 6 && yPick > 0 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick - 1)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 2, yPick - 1)) {
+		if (xPick < 6 && yPick > 0 && ((pieceOnBoard = getPieceFromBoard(xPick + 2, yPick - 1)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 2, yPick - 1)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 1] |= 128 >> (xPick + 2);
 			else
 				captureBitMask[yPick - 1] |= 128 >> (xPick + 2);
 		}
-		if (xPick > 1 && yPick < 6 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick + 1)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 2, yPick + 1)) {
+		if (xPick > 1 && yPick < 6 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick + 1)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 2, yPick + 1)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 1] |= 128 >> (xPick - 2);
 			else
 				captureBitMask[yPick + 1] |= 128 >> (xPick - 2);
 		}
-		if (xPick > 1 && yPick > 0 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick - 1)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 2, yPick - 1)) {
+		if (xPick > 1 && yPick > 0 && ((pieceOnBoard = getPieceFromBoard(xPick - 2, yPick - 1)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 2, yPick - 1)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 1] |= 128 >> (xPick - 2);
 			else
 				captureBitMask[yPick - 1] |= 128 >> (xPick - 2);
 		}
-		if (xPick < 7 && yPick < 5 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick + 2)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 1, yPick + 2)) {
+		if (xPick < 7 && yPick < 5 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick + 2)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 1, yPick + 2)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 2] |= 128 >> (xPick + 1);
 			else
 				captureBitMask[yPick + 2] |= 128 >> (xPick + 1);
 		}
-		if (xPick < 7 && yPick > 1 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick - 2)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 1, yPick - 2)) {
+		if (xPick < 7 && yPick > 1 && ((pieceOnBoard = getPieceFromBoard(xPick + 1, yPick - 2)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 1, yPick - 2)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 2] |= 128 >> (xPick + 1);
 			else
 				captureBitMask[yPick - 2] |= 128 >> (xPick + 1);
 		}
-		if (xPick > 0 && yPick < 5 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick + 2)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 1, yPick + 2)) {
+		if (xPick > 0 && yPick < 5 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick + 2)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 1, yPick + 2)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick + 2] |= 128 >> (xPick - 1);
 			else
 				captureBitMask[yPick + 2] |= 128 >> (xPick - 1);
 		}
-		if (xPick > 0 && yPick > 1 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick - 2)) == 0 || !(pieceOnBoard & pieceColor)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 1, yPick - 2)) {
+		if (xPick > 0 && yPick > 1 && ((pieceOnBoard = getPieceFromBoard(xPick - 1, yPick - 2)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick - 1, yPick - 2)) {
 			if (pieceOnBoard == 0)
 				moveBitMask[yPick - 2] |= 128 >> (xPick - 1);
 			else
@@ -326,10 +333,10 @@ char checkIfCheck(char color) {
 	for(char x=0;x<8;x++)
 		for (char y=0; y < 8; y++) {
 			char piece = getPieceFromBoard(x, y);
-			if ((~(piece ^ color)) & BLACK)
+			if ((piece & BLACK)!=color)
 			{
 				getLegalMovesWithoutCheck(x, y, &moveBitmask, &captureBitmask);
-				if (captureBitmask[y] & (128 >> y))
+				if (captureBitmask[kingPosY] & (128 >> kingPosX))
 					return 1;
 			}
 		}
@@ -345,6 +352,24 @@ char checkIfCheckOnChangedBoard(char color, char xPicked, char yPicked, char xDe
 	setPiece(xPicked, yPicked, picked);
 	setPiece(xDest, yDest, dest);
 	return ret;
+}
+
+//0-none 1-checkmate 2-stalemate 
+char checkIfCheckmateOrStalemateWhileChecked(char color) {
+	char moveBitmask[8] = { 0 };
+	char captureBitmask[8] = { 0 };
+	for(char x=0;x<8;x++)
+		for (char y = 0; y < 8; y++) {
+			char piece = getPieceFromBoard(x, y);
+			if ((piece & BLACK) == color)
+			{
+				getLegalMoves(x, y, &moveBitmask, &captureBitmask);
+				for (int i = 0; i < 8; i++) {
+					if (moveBitmask[i] != 0 || captureBitmask[i] != 0) return 0;
+				}
+			}
+		}
+	return !!!check + 1;
 }
 
 void pickupPiece(char x, char y) {

@@ -5,3 +5,5 @@ void setDefaultChessBoard();
 void pickupPiece(char x, char y);
 char* getBoardPtr();
 void getLegalMoves(char xPick, char yPick, char* mobeBitMask,char* captureBitMask);
+char checkIfCheck(char color);
+char checkIfCheckmateOrStalemateWhileChecked(char color);

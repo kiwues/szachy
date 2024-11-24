@@ -11,3 +11,4 @@ void interface_showBitmask(char* ptrBitmask);
 void interface_showLegalMovesOfCurrentPiece();
 void interface_clearBitmask();
 void interface_printMenu();
+void interface_showWin(char color);
