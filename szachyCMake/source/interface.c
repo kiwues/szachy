@@ -202,7 +202,10 @@ void interface_printMenu() {
 	wprintf(L"ESC-Exit\n");
 }
 
-void interface_showWin(char color) {
-	moveCursorToBoard(4, 12);
-	wprintf(L"Win for the %ls!", color ? L"white" : L"black");
+void interface_showEnd(char color) {
+	moveCursorToBoard(0, 12);
+	if(color>=0)
+		wprintf(L"Win for the %ls!", color ? L"white" : L"black");
+	else 
+		wprintf(L"Stalemate!");
 }

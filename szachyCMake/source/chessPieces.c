@@ -107,7 +107,7 @@ void getMaskOfPiece(char piece,char x, char y,char* maskArray) {
 		}
 		break;
 	case 6://PAWN
-		if (piece & 8) {
+		if (!(piece & 8)) {
 			if (y > 0) {
 				maskArray[y - 1] = 128 >> x;
 				if (y == 6)

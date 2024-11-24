@@ -14,13 +14,16 @@ void StartNewGame() {
 }
 
 void NextRound() {
-	if (checkIfCheck(round ? 0 : 8))
-	{
-		check = round + 1;
-		if (checkIfCheckmateOrStalemateWhileChecked(round ? 0 : 8)) {
-			interface_showWin(round ? 0 : 8);
-			gameStarted = 0;
+	check = checkIfCheck(round ? 0 : 8) * (round + 1);
+	char mateStale = checkIfCheckmateOrStalemateWhileChecked(round ? 0 : 8);
+	if (mateStale) {
+		if (mateStale == 1) {
+			interface_showEnd(round ? 0 : 8);
 		}
+		else {
+			interface_showEnd(-1);
+		}
+		gameStarted = 0;
 	}
 	round = !round;
 }
