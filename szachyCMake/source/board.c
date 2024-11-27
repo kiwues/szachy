@@ -23,6 +23,8 @@ const char startingBoard[4][8] =
 
 char xPicked=-1, yPicked;
 
+char castling = 119;// 0001-king didnt move, 0110-rooks didnt move start: 01110111
+
 void setDefaultChessBoard() {
 	memcpy(boardRepresentation, startingBoard, 4 * 8);
 }
@@ -371,12 +373,24 @@ char checkIfCheckmateOrStalemateWhileChecked(char color) {
 	return !!!check + 1;
 }
 
+
+
 void pickupPiece(char x, char y) {
+	if (pawnPromotion!=-1) {
+		if ((y != -1 && y  != 8)) return;
+		setPiece(pawnPromotion >> 4, pawnPromotion & 15, ((pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0));
+		interface_clearPawnPromotion();
+		//interface_renderPiece(pawnPromotion >> 4, pawnPromotion & 15);
+		NextRound();
+	}else
 	if (xPicked != -1&& isLegalMove(xPicked, yPicked, x, y)) {
 		movePiece(xPicked, yPicked, x, y);
 		interface_clearBitmask();
 		xPicked = -1;
-		NextRound();
+		if ((y == 0 || y == 7)&&(getPieceFromBoard(x, y) & CHESSMASK) == PAWN) {
+			interface_showPawnPromotion(x, y);
+		}else
+			NextRound();
 	} else{
 		char piece = getPieceFromBoard(x, y);
 		if (!piece || (piece >> 3) != round) {

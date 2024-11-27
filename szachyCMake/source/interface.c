@@ -5,6 +5,7 @@
 #include<stdlib.h>
 #include"../header/input.h"
 #include"../header/chessPieces.h"
+#include"../header/game.h"
 
 
 #ifndef __linux__
@@ -85,12 +86,21 @@ void drawCursor(char x, char y) {
 	{
 		if (lastCursor_x != -1) {
 			moveCursorToBoard(lastCursor_x, lastCursor_y);
-			drawCorrectSquare(lastCursor_x, lastCursor_y);
-			printCorrectPiece(getPieceFromBoard(lastCursor_x, lastCursor_y));
+			if (pawnPromotion != -1&&(lastCursor_y < 0 || lastCursor_y>7)) {
+				wprintf(L"\033[48;5;214m");
+				printCorrectPiece(((pawnPromotion >> 4) + 3 - lastCursor_x)|(lastCursor_y==8?BLACK:0));
+			}
+			else {
+				drawCorrectSquare(lastCursor_x, lastCursor_y);
+				printCorrectPiece(getPieceFromBoard(lastCursor_x, lastCursor_y));
+			}
 			moveCursorToBoard(x, y);
 		}
 		wprintf(L"\033[48;5;251m");
-		printCorrectPiece(getPieceFromBoard(x, y));
+		if (pawnPromotion != -1&(y < 0 || y>7)) {
+			printCorrectPiece(((pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0));
+		}else
+			printCorrectPiece(getPieceFromBoard(x, y));
 		moveCursorToBoard(x, y);
 		lastCursor_x = x;
 		lastCursor_y = y;
@@ -208,4 +218,45 @@ void interface_showEnd(char color) {
 		wprintf(L"Win for the %ls!", color ? L"white" : L"black");
 	else 
 		wprintf(L"Stalemate!");
+}
+
+void interface_showPawnPromotion(char x, char y) {
+	pawnPromotion = (x << 4) | y;
+	char addition = 0;
+	if (y == 0) {
+		moveCursorToBoard(x - 2, y - 1);
+	}
+	else {
+		moveCursorToBoard(x - 2, y + 1);
+		addition = 1 << 3;
+	}
+	printCorrectPiece(KNIGHT|addition);
+	printCorrectPiece(BISHOP | addition);
+	printCorrectPiece(ROOK | addition);
+	printCorrectPiece(QUEEN | addition);
+	moveCursorToBoard(x, y);
+	fflush(stdout);
+}
+
+void interface_clearPawnPromotion() {
+	if((pawnPromotion&15)==0)
+		moveCursorToBoard((pawnPromotion >> 4)-2, (pawnPromotion & 15)-1);
+	else
+		moveCursorToBoard((pawnPromotion >> 4) - 2, (pawnPromotion & 15)+1);
+	wprintf(L"\033[0m  ");
+	wprintf(L"\033[0m  ");
+	wprintf(L"\033[0m  ");
+	wprintf(L"\033[0m  ");
+	lastCursor_x = -1;
+	cursor_x = (pawnPromotion >> 4);
+	cursor_y = (pawnPromotion & 15);
+	input_updateCursor();
+	pawnPromotion = -1;
+}
+
+void interface_renderPiece(char x, char y) {
+	moveCursorToBoard(x, y);
+	drawCorrectSquare(x, y);
+	printCorrectPiece(getPieceFromBoard(x,y));
+	input_updateCursor();
 }

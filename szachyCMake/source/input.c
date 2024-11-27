@@ -65,20 +65,43 @@ void gameControls(int ch) {
         break;
 #ifdef __linux__
     case 1000:
-        cursor_y--;
-        if (cursor_y < 0) cursor_y++;
+        if (pawnPromotion != -1 && (pawnPromotion & 15) == 0 && cursor_y > -1 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+            cursor_y--;
+        }
+        else {
+            cursor_y--;
+            if (cursor_y < 0) cursor_y++;
+        }
         break;
     case 1001:
-        cursor_y++;
-        if (cursor_y > 7) cursor_y--;
+        if (pawnPromotion != -1 && (pawnPromotion & 15) == 8 && cursor_y < 8 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+            cursor_y++;
+        }
+        else {
+            cursor_y++;
+            if (cursor_y > 7) cursor_y--;
+        }
         break;
     case 1002:
-        cursor_x++;
-        if (cursor_x > 7) cursor_x--;
+        if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
+            if ((pawnPromotion >> 4) - cursor_x > -1)
+                cursor_x++;
+        }
+        else {
+            cursor_x++;
+            if (cursor_x > 7) cursor_x--;
+        }
         break;
     case 1003:
-        cursor_x--;
-        if (cursor_x < 0) cursor_x++;
+        if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y>7))
+        {
+            if (((pawnPromotion >> 4) - cursor_x < 2))
+                cursor_x--;
+        }
+        else {
+            cursor_x--;
+            if (cursor_x < 0) cursor_x++;
+        }
         break;
 #else
     case 0:
@@ -87,20 +110,45 @@ void gameControls(int ch) {
         ch = _getch();
         switch (ch) {
         case 72:
-            cursor_y--;
-            if (cursor_y < 0) cursor_y++;
+        {
+            if (pawnPromotion != -1 && (pawnPromotion & 15) == 0 && cursor_y ==0 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+                cursor_y--;
+            }
+            else {
+                cursor_y--;
+                if (cursor_y < 0) cursor_y++;
+            }
             break;
+        }
         case 80:
-            cursor_y++;
-            if (cursor_y > 7) cursor_y--;
+            if (pawnPromotion != -1 && (pawnPromotion & 15) == 7 && cursor_y == 7 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+                cursor_y++;
+            }
+            else {
+                cursor_y++;
+                if (cursor_y > 7) cursor_y--;
+            }
             break;
         case 75:
-            cursor_x--;
-            if (cursor_x < 0) cursor_x++;
+            if (pawnPromotion != -1&&(cursor_y<0||cursor_y>7))
+            {
+                if(((pawnPromotion >> 4) - cursor_x<2 ))
+                    cursor_x--;
+            }
+            else {
+                cursor_x--;
+                if (cursor_x < 0) cursor_x++;
+            }
             break;
         case 77:
-            cursor_x++;
-            if (cursor_x > 7) cursor_x--;
+            if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
+                if ((pawnPromotion >> 4) - cursor_x > -1)
+                    cursor_x++;
+            }
+            else {
+                cursor_x++;
+                if (cursor_x > 7) cursor_x--;
+            }
             break;
         default:
             break;

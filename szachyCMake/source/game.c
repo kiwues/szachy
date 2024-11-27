@@ -5,6 +5,7 @@
 char gameStarted = 0;
 char round = 0;
 char check=0;
+char pawnPromotion = 255;
 
 void StartNewGame() {
 	gameStarted = 1;
