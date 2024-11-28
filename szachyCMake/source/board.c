@@ -297,15 +297,15 @@ void getLegalMoves(char xPick, char yPick, char* moveBitMask, char* captureBitMa
 		x = xPick;
 		y = yPick;
 	}
-	if ((piece & CHESSMASK) == KING) {
+	if ((piece & CHESSMASK) == KING&&!check) {
 		if ((128 >> ((piece & BLACK) ? 5 : 1)) & castling) { //left rook
-			if (!getPieceFromBoard(xPick - 1, yPick) && !getPieceFromBoard(xPick - 2, yPick) && !getPieceFromBoard(xPick - 3, yPick))
+			if (!getPieceFromBoard(xPick - 1, yPick) && !getPieceFromBoard(xPick - 2, yPick) && !getPieceFromBoard(xPick - 3, yPick)&&!checkIfCheckOnChangedBoard(piece&BLACK,xPick,yPick,3,yPick)&& !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 2, yPick))
 			{
 				moveBitMask[yPick] |= 128 >> 2;
 			}
 		}
 		if ((128 >> ((piece & BLACK) ? 6 : 2)) & castling) { //right rook
-			if (!getPieceFromBoard(xPick + 1, yPick) && !getPieceFromBoard(xPick + 2, yPick))
+			if (!getPieceFromBoard(xPick + 1, yPick) && !getPieceFromBoard(xPick + 2, yPick) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 5, yPick) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 6, yPick))
 			{
 				moveBitMask[yPick] |= 2;
 			}
