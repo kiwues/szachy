@@ -23,7 +23,7 @@ const char startingBoard[4][8] =
 
 char xPicked=-1, yPicked;
 
-char castling = 119;// 0001-king didnt move, 0110-rooks didnt move start: 01110111
+char castling = 119;// 0001-king didnt move, 0110-rooks didnt move start: 01110111 4bit-white 4bit-black
 
 void setDefaultChessBoard() {
 	memcpy(boardRepresentation, startingBoard, 4 * 8);
@@ -297,6 +297,20 @@ void getLegalMoves(char xPick, char yPick, char* moveBitMask, char* captureBitMa
 		x = xPick;
 		y = yPick;
 	}
+	if ((piece & CHESSMASK) == KING) {
+		if ((128 >> ((piece & BLACK) ? 5 : 1)) & castling) { //left rook
+			if (!getPieceFromBoard(xPick - 1, yPick) && !getPieceFromBoard(xPick - 2, yPick) && !getPieceFromBoard(xPick - 3, yPick))
+			{
+				moveBitMask[yPick] |= 128 >> 2;
+			}
+		}
+		if ((128 >> ((piece & BLACK) ? 6 : 2)) & castling) { //right rook
+			if (!getPieceFromBoard(xPick + 1, yPick) && !getPieceFromBoard(xPick + 2, yPick))
+			{
+				moveBitMask[yPick] |= 2;
+			}
+		}
+	}
 	return;
 }
 
@@ -384,13 +398,37 @@ void pickupPiece(char x, char y) {
 		NextRound();
 	}else
 	if (xPicked != -1&& isLegalMove(xPicked, yPicked, x, y)) {
+		char piece = getPieceFromBoard(xPicked, yPicked);
 		movePiece(xPicked, yPicked, x, y);
+		if ((piece & CHESSMASK) == KING) {
+			if (x - xPicked == 2) { //castle wtith right rook
+				movePiece(7, yPicked, 5, yPicked);
+			}
+			else if (xPicked - x == 2) {
+				movePiece(0, yPicked, 3, yPicked);
+			}
+		}
 		interface_clearBitmask();
-		xPicked = -1;
-		if ((y == 0 || y == 7)&&(getPieceFromBoard(x, y) & CHESSMASK) == PAWN) {
+		if ((y == 0 || y == 7)&&(piece & CHESSMASK) == PAWN) {
+			xPicked = -1;
 			interface_showPawnPromotion(x, y);
-		}else
+		}
+		else {
 			NextRound();
+			if ((piece&CHESSMASK) == ROOK) {
+				if (xPicked == 0) {
+					castling &= ~((64)>> (piece & BLACK ? 4 : 0));
+				}
+				else if (xPicked == 7) {
+					castling &= ~((32) >> (piece & BLACK ? 4 : 0));
+				}
+			}
+			else if ((piece & CHESSMASK) == KING) {
+				castling &= 240 >> (piece & BLACK ? 0 : 4);
+			}
+		}
+		xPicked = -1;
+
 	} else{
 		char piece = getPieceFromBoard(x, y);
 		if (!piece || (piece >> 3) != round) {
