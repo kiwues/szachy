@@ -69,10 +69,17 @@ void printCorrectPiece(char piece) {
 
 void drawCorrectSquare(char x, char y)
 {
-	if (isDrawingBitmask&&drawingMoveBitmask[y]&(128>>x))
+	if (isDrawingBitmask)
 	{
-		wprintf(L"\033[48;5;253m");
-	}else
+		if (drawingMoveBitmask[y] & (128 >> x)) {
+			wprintf(L"\033[48;5;253m");
+			return;
+		}
+		else if (drawingCaptureBitmask[y] & (128 >> x)) {
+			wprintf(L"\033[48;5;196m");
+			return;
+		}
+	}
 	if ((y + x) % 2) {
 		wprintf(L"\033[48;5;130m");
 	}
