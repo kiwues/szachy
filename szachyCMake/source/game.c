@@ -1,11 +1,13 @@
 #include"../header/board.h"
 #include"../header/interface.h"
 #include"../header/input.h"
+#include"../boty/boty.h"
 
 char gameStarted = 0;
 char round = 0;
 char check=0;
 char pawnPromotion = 255;
+char botId = 0;
 
 void StartNewGame() {
 	gameStarted = 1;
@@ -27,4 +29,7 @@ void NextRound() {
 		gameStarted = 0;
 	}
 	round = !round;
+	if (botId) {
+		Bot_MakeMove(botId & 127);
+	}
 }

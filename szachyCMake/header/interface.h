@@ -1,4 +1,5 @@
 #pragma once
+#include <wchar.h>
 
 //zmienic w vsc cursor width, minimum contrast ratio 1, font size 
 
@@ -15,3 +16,4 @@ void interface_printMenu();
 void interface_showEnd(char color);
 void interface_showPawnPromotion(char x, char y);
 void interface_clearPawnPromotion();
+void interface_writeDebug(wchar_t* text);

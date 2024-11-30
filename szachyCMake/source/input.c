@@ -55,6 +55,7 @@ void gameControls(int ch) {
         interface_showLegalMovesOfCurrentPiece();
         break;
     case 32:
+        //if (botId&&((botId & 128) >> 7) == round)break;
         pickupPiece(cursor_x, cursor_y);
         break;
     case 'r':
@@ -177,6 +178,10 @@ void input_loop() {
         {
         case '1':
             StartNewGame();
+            break;
+        case '2':
+            StartNewGame();
+            botId = 129;//color:black botid:1
             break;
         case 27:
             running = 0;

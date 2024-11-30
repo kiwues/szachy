@@ -3,23 +3,23 @@
 #include"../header/interface.h"
 #include"../header/game.h"
 
-char boardRepresentation[4][8] = { 0 };
+char boardRepresentation[32] = { 0 };
 
 //x = chessPiece2<<4|chessPiece1
-/*const char startingBoard[4][8] =
+const char startingBoard[32] =
 {
-	{53,102,0,0,0,0,238,189}, 
-	{66,102,0,0,0,0,238,202},
-	{20,102,0,0,0,0,238,156},
-	{83,102,0,0,0,0,238,219}
-};*/
-const char startingBoard[4][8] =
-{
-	{189,238,0,0,0,0,102,53}, 
-	{202,238,0,0,0,0,102,66},
-	{156,238,0,0,0,0,102,20},
-	{219,238,0,0,0,0,102,83}
+	189,238,0,0,0,0,102,53, 
+	202,238,0,0,0,0,102,66,
+	156,238,0,0,0,0,102,20,
+	219,238,0,0,0,0,102,83
 };
+/*const char startingBoard[32] =
+{
+	189,238,0,0,0,0,102,53,
+	202,238,0,0,0,0,102,66,
+	156,238,0,0,0,0,102,20,
+	219,238,0,0,0,0,102,83
+};*/
 
 char xPicked=-1, yPicked;
 
@@ -30,7 +30,7 @@ void setDefaultChessBoard() {
 	memcpy(boardRepresentation, startingBoard, 4 * 8);
 }
 char getPieceFromBoard(char x, char y) {
-	return (boardRepresentation[x / 2][y] >> !(x % 2) * 4) & 15;
+	return (boardRepresentation[(x / 2)*8+y] >> !(x % 2) * 4) & 15;
 }
 
 char getPositionOfKing(char color) {
@@ -367,7 +367,7 @@ char isLegalMove(char xPick, char yPick, char xDest, char yDest) {
 
 
 void setPiece(char x, char y, char piece) {
-	boardRepresentation[x / 2][y] = (boardRepresentation[x / 2][y] & (240 >> (!(x % 2) * 4)))|(piece<<!(x%2)*4);
+	boardRepresentation[(x / 2)*8+y] = (boardRepresentation[(x / 2)*8+y] & (240 >> (!(x % 2) * 4)))|(piece<<!(x%2)*4);
 }
 
 void movePiece(char sourceX, char sourceY, char destinationX, char destinationY) {
@@ -492,4 +492,23 @@ void pickupPiece(char x, char y) {
 		xPicked = x;
 		yPicked = y;
 	}
+}
+
+unsigned char BitCount(unsigned char byte) {
+	static const unsigned char NIBBLE_LOOKUP[16] =
+	{
+	  0, 1, 1, 2, 1, 2, 2, 3,
+	  1, 2, 2, 3, 2, 3, 3, 4
+	};
+	return NIBBLE_LOOKUP[byte & 0x0F] + NIBBLE_LOOKUP[byte >> 4];
+}
+
+int getAmountOfLegalMoves(char x, char y,char *moveMask,char *captureMask) 
+{
+	getLegalMoves(x, y, moveMask, captureMask);
+	int amount = 0;
+	for (char i = 0; i < 8; i++) {
+		amount += BitCount(moveMask[i]) ;//+ BitCount(captureMask[i])
+	}
+	return amount;
 }

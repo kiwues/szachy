@@ -42,6 +42,8 @@ char drawingCaptureBitmask[8] = { 0 };
 
 char isDrawingBitmask = 0;
 
+char xDebug=0, yDebug=10;
+
 void interface_init() {
 #ifndef __linux__
 	_setmode(_fileno(stdout), 0x00020000);
@@ -215,7 +217,8 @@ void interface_showLegalMovesOfCurrentPiece() {
 
 
 void interface_printMenu() {
-	wprintf(L"1-Start new game\n");
+	wprintf(L"1-Start new game vs player\n");
+	wprintf(L"2-Start new game vs bot\n");
 	wprintf(L"ESC-Exit\n");
 }
 
@@ -266,4 +269,16 @@ void interface_renderPiece(char x, char y) {
 	drawCorrectSquare(x, y);
 	printCorrectPiece(getPieceFromBoard(x,y));
 	input_updateCursor();
+}
+void interface_writeDebug(wchar_t* text) {
+	moveCursorToBoard(xDebug, yDebug);
+	/*xDebug += strlen(text);
+	if (xDebug > 30)
+	{
+		xDebug = 12;
+		yDebug++;
+	}*/
+	wprintf(L"%s", text);
+	input_updateCursor();
+	fflush(stdout);
 }
