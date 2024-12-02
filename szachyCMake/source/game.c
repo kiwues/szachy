@@ -4,32 +4,35 @@
 #include"../boty/boty.h"
 
 char gameStarted = 0;
-char round = 0;
-char check=0;
-char pawnPromotion = 255;
 char botId = 0;
+ChessBoard* mainBoard;
 
 void StartNewGame() {
 	gameStarted = 1;
 	setDefaultChessBoard();
-	interface_resetRender();
+	mainBoard = getBoardPtr();
+	interface_drawWholeBoard(mainBoard);
 	input_updateCursor();
 }
 
+void BotMove() {
+	if (botId && !!(botId & 128) == mainBoard->round) {
+		Bot_MakeMove(botId & 127);
+	}
+}
+
 void NextRound() {
-	check = checkIfCheck(round ? 0 : 8) * (round + 1);
-	char mateStale = checkIfCheckmateOrStalemateWhileChecked(round ? 0 : 8);
+	mainBoard->check = checkIfCheck(mainBoard->round ? 0 : 8, mainBoard) * (mainBoard->round + 1);
+	char mateStale = checkIfCheckmateOrStalemateWhileChecked(mainBoard->round ? 0 : 8);
 	if (mateStale) {
 		if (mateStale == 1) {
-			interface_showEnd(round ? 0 : 8);
+			interface_showEnd(mainBoard->round ? 0 : 8);
 		}
 		else {
 			interface_showEnd(-1);
 		}
 		gameStarted = 0;
 	}
-	round = !round;
-	if (botId) {
-		Bot_MakeMove(botId & 127);
-	}
+	mainBoard->round = !mainBoard->round;
+	BotMove();
 }

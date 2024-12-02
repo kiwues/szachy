@@ -19,6 +19,8 @@ char cursor_x = 0;
 int offsetBoardx = 35;
 int offsetBoardy = 2;
 
+
+
 void moveCursorTo(char x, char y) {
     wprintf(L"\033[%d;%dH", y, x);
 	fflush(stdout);
@@ -50,23 +52,18 @@ short getCursorPosition() {
 }
 
 void gameControls(int ch) {
+    ChessBoard* board=getBoardPtr();
     switch (ch) {
-    case 's':
-        interface_showLegalMovesOfCurrentPiece();
-        break;
     case 32:
         //if (botId&&((botId & 128) >> 7) == round)break;
         pickupPiece(cursor_x, cursor_y);
-        break;
-    case 'r':
-        interface_resetRender();
         break;
     case 27:
         running = 0;
         break;
 #ifdef __linux__
     case 1000:
-        if (pawnPromotion != -1 && (pawnPromotion & 15) == 0 && cursor_y > -1 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+        if (board->pawnPromotion != -1 && (board->pawnPromotion & 15) == 0 && cursor_y > -1 && ((board->pawnPromotion >> 4) - cursor_x<3 && (board->pawnPromotion >> 4) - cursor_x>-2)) {
             cursor_y--;
         }
         else {
@@ -75,7 +72,7 @@ void gameControls(int ch) {
         }
         break;
     case 1001:
-        if (pawnPromotion != -1 && (pawnPromotion & 15) == 8 && cursor_y < 8 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+        if (board->pawnPromotion != -1 && (board->pawnPromotion & 15) == 8 && cursor_y < 8 && ((board->pawnPromotion >> 4) - cursor_x<3 && (board->pawnPromotion >> 4) - cursor_x>-2)) {
             cursor_y++;
         }
         else {
@@ -84,8 +81,8 @@ void gameControls(int ch) {
         }
         break;
     case 1002:
-        if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
-            if ((pawnPromotion >> 4) - cursor_x > -1)
+        if (board->pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
+            if ((board->pawnPromotion >> 4) - cursor_x > -1)
                 cursor_x++;
         }
         else {
@@ -94,9 +91,9 @@ void gameControls(int ch) {
         }
         break;
     case 1003:
-        if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y>7))
+        if (board->pawnPromotion != -1 && (cursor_y < 0 || cursor_y>7))
         {
-            if (((pawnPromotion >> 4) - cursor_x < 2))
+            if (((board->pawnPromotion >> 4) - cursor_x < 2))
                 cursor_x--;
         }
         else {
@@ -112,7 +109,7 @@ void gameControls(int ch) {
         switch (ch) {
         case 72:
         {
-            if (pawnPromotion != -1 && (pawnPromotion & 15) == 0 && cursor_y ==0 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+            if (board->pawnPromotion != -1 && (board->pawnPromotion & 15) == 0 && cursor_y ==0 && ((board->pawnPromotion >> 4) - cursor_x<3 && (board->pawnPromotion >> 4) - cursor_x>-2)) {
                 cursor_y--;
             }
             else {
@@ -122,7 +119,7 @@ void gameControls(int ch) {
             break;
         }
         case 80:
-            if (pawnPromotion != -1 && (pawnPromotion & 15) == 7 && cursor_y == 7 && ((pawnPromotion >> 4) - cursor_x<3 && (pawnPromotion >> 4) - cursor_x>-2)) {
+            if (board->pawnPromotion != -1 && (board->pawnPromotion & 15) == 7 && cursor_y == 7 && ((board->pawnPromotion >> 4) - cursor_x<3 && (board->pawnPromotion >> 4) - cursor_x>-2)) {
                 cursor_y++;
             }
             else {
@@ -131,9 +128,9 @@ void gameControls(int ch) {
             }
             break;
         case 75:
-            if (pawnPromotion != -1&&(cursor_y<0||cursor_y>7))
+            if (board->pawnPromotion != -1&&(cursor_y<0||cursor_y>7))
             {
-                if(((pawnPromotion >> 4) - cursor_x<2 ))
+                if(((board->pawnPromotion >> 4) - cursor_x<2 ))
                     cursor_x--;
             }
             else {
@@ -142,8 +139,8 @@ void gameControls(int ch) {
             }
             break;
         case 77:
-            if (pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
-                if ((pawnPromotion >> 4) - cursor_x > -1)
+            if (board->pawnPromotion != -1 && (cursor_y < 0 || cursor_y > 7)) {
+                if ((board->pawnPromotion >> 4) - cursor_x > -1)
                     cursor_x++;
             }
             else {
@@ -181,7 +178,8 @@ void input_loop() {
             break;
         case '2':
             StartNewGame();
-            botId = 129;//color:black botid:1
+            botId = 129;//color:black botid:1 
+            BotMove();
             break;
         case 27:
             running = 0;

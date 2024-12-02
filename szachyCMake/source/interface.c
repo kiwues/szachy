@@ -95,9 +95,9 @@ void drawCursor(char x, char y) {
 	{
 		if (lastCursor_x != -1) {
 			moveCursorToBoard(lastCursor_x, lastCursor_y);
-			if (pawnPromotion != -1&&(lastCursor_y < 0 || lastCursor_y>7)) {
+			if (getBoardPtr()->pawnPromotion != -1&&(lastCursor_y < 0 || lastCursor_y>7)) {
 				wprintf(L"\033[48;5;214m");
-				printCorrectPiece(((pawnPromotion >> 4) + 3 - lastCursor_x)|(lastCursor_y==8?BLACK:0));
+				printCorrectPiece(((getBoardPtr()->pawnPromotion >> 4) + 3 - lastCursor_x)|(lastCursor_y==8?BLACK:0));
 			}
 			else {
 				drawCorrectSquare(lastCursor_x, lastCursor_y);
@@ -106,10 +106,13 @@ void drawCursor(char x, char y) {
 			moveCursorToBoard(x, y);
 		}
 		wprintf(L"\033[48;5;251m");
-		if (pawnPromotion != -1&(y < 0 || y>7)) {
-			printCorrectPiece(((pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0));
-		}else
-			printCorrectPiece(getPieceFromBoard(x, y));
+		if (getBoardPtr()->pawnPromotion != -1&(y < 0 || y>7)) {
+			printCorrectPiece(((getBoardPtr()->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0));
+		}
+		else {
+			char piece = getPieceFromBoard(x, y);
+			printCorrectPiece(piece);
+		}
 		moveCursorToBoard(x, y);
 		lastCursor_x = x;
 		lastCursor_y = y;
@@ -135,7 +138,7 @@ void interface_renderMovePiece(char sourceX,char sourceY,char destinationX,char 
 
 
 
-void drawWholeBoard() {
+void interface_drawWholeBoard(ChessBoard* board) {
 #ifdef __linux__
 	system("clear");
 #else 	
@@ -148,9 +151,11 @@ void drawWholeBoard() {
 		for (char x = 0; x < 8; x++)
 		{
 			drawCorrectSquare(x, y);
-			printCorrectPiece(getPieceFromBoard(x, y));
+			printCorrectPiece(getPieceFromBoardPtr(x, y,board));
+			wprintf(L"\033[0m");
 		}
 		wprintf(L"\033[48;5;42m");
+		wprintf(L"\033[0m");
 		wprintf(L"\n");
 		wprintf(L"\033[0m");
 	}
@@ -178,10 +183,6 @@ void drawBitmask(char* ptrMoveBitmask, char* ptrCaptureBitmask) {
 }
 
 
-void interface_resetRender() {
-	drawWholeBoard();
-}
-
 
 
 void interface_showBitmask(char* ptrMoveBitmask, char* ptrCaptureBitmask) {
@@ -206,11 +207,10 @@ void interface_clearBitmask() {
 	}
 }
 
-void interface_showLegalMovesOfCurrentPiece() {
-	short cursorPos = getCursorPosition();
+void interface_showLegalMovesOfCurrentPiece(char x, char y) {
 	char* bitMask[8] = { 0 };
 	char* captureMask[8] = { 0 };
-	getLegalMoves(cursorPos >> 8, cursorPos & 255,&bitMask,&captureMask);
+	getLegalMoves(x, y,&bitMask,&captureMask,getBoardPtr());
 	//getMaskOfPiece(getPieceFromBoard(cursorPos >> 8, cursorPos & 255), cursorPos >> 8, cursorPos & 255, &bitMask);
 	interface_showBitmask(bitMask,captureMask);
 }
@@ -231,7 +231,7 @@ void interface_showEnd(char color) {
 }
 
 void interface_showPawnPromotion(char x, char y) {
-	pawnPromotion = (x << 4) | y;
+	getBoardPtr()->pawnPromotion = (x << 4) | y;
 	char addition = 0;
 	if (y == 0) {
 		moveCursorToBoard(x - 2, y - 1);
@@ -249,19 +249,20 @@ void interface_showPawnPromotion(char x, char y) {
 }
 
 void interface_clearPawnPromotion() {
-	if((pawnPromotion&15)==0)
-		moveCursorToBoard((pawnPromotion >> 4)-2, (pawnPromotion & 15)-1);
+	char* pawnPromotion = &getBoardPtr()->pawnPromotion;
+	if((*pawnPromotion &15)==0)
+		moveCursorToBoard((*pawnPromotion >> 4)-2, (*pawnPromotion & 15)-1);
 	else
-		moveCursorToBoard((pawnPromotion >> 4) - 2, (pawnPromotion & 15)+1);
+		moveCursorToBoard((*pawnPromotion >> 4) - 2, (*pawnPromotion & 15)+1);
 	wprintf(L"\033[0m  ");
 	wprintf(L"\033[0m  ");
 	wprintf(L"\033[0m  ");
 	wprintf(L"\033[0m  ");
 	lastCursor_x = -1;
-	cursor_x = (pawnPromotion >> 4);
-	cursor_y = (pawnPromotion & 15);
+	cursor_x = (*pawnPromotion >> 4);
+	cursor_y = (*pawnPromotion & 15);
 	input_updateCursor();
-	pawnPromotion = -1;
+	*pawnPromotion = -1;
 }
 
 void interface_renderPiece(char x, char y) {

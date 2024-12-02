@@ -14,7 +14,6 @@ void app_loop() {
 
 void app_init() {
 	interface_init();
-	setDefaultChessBoard();
 	input_init();
 	interface_printMenu();
 	Bot_Init();
