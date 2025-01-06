@@ -1,4 +1,7 @@
 #pragma once
+#include<stdint.h>
+#include"board.h"
+
 
 #define BLACK 8 //00001000
 #define CHESSMASK 7 //00000111
@@ -9,4 +12,4 @@
 #define KNIGHT 5//00000101
 #define PAWN 6//00000110
 
-void getMaskOfPiece(char piece, char x, char y, char* maskArray);
+void getMaskOfPiece(char piece, char x, char y, uint64_t* moveBitmask, uint64_t* captureBitmask, ChessBoard* board);
