@@ -1,38 +1,37 @@
 #include"../header/board.h"
 #include"../header/interface.h"
 #include"../header/input.h"
-#include"../boty/boty.h"
+#include"../bot.h"
 
 char gameStarted = 0;
 char botId = 0;
-ChessBoard* mainBoard;
+ChessBoard displayBoard={0};
 
 void StartNewGame() {
+	InitBoard(&displayBoard);
 	gameStarted = 1;
-	setDefaultChessBoard();
-	mainBoard = getBoardPtr();
-	interface_drawWholeBoard(mainBoard);
+	interface_drawWholeBoard(&displayBoard);
 	input_updateCursor();
 }
 
 void BotMove() {
-	if (botId && !!(botId & 128) == mainBoard->round) {
-		Bot_MakeMove(botId & 127);
+	if (botId && !!(botId & 128) == displayBoard.round) {
+		Bot_MakeMove(botId & 127,&displayBoard);
 	}
 }
 
 void NextRound() {
-	mainBoard->check = checkIfCheck(mainBoard->round ? 0 : 8, mainBoard) * (mainBoard->round + 1);
-	char mateStale = checkIfCheckmateOrStalemateWhileChecked(mainBoard->round ? 0 : 8);
+	displayBoard.check = checkIfCheck(!displayBoard.round, &displayBoard) * (displayBoard.round + 1);
+	char mateStale = checkIfCheckmateOrStalemateWhileChecked(displayBoard.round ? 0 : 8,&displayBoard);
 	if (mateStale) {
 		if (mateStale == 1) {
-			interface_showEnd(mainBoard->round ? 0 : 8);
+			interface_showEnd(displayBoard.round ? 0 : 8);
 		}
 		else {
 			interface_showEnd(-1);
 		}
 		gameStarted = 0;
 	}
-	mainBoard->round = !mainBoard->round;
+	displayBoard.round = !displayBoard.round;
 	BotMove();
 }

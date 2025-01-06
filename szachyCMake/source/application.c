@@ -2,7 +2,6 @@
 #include"../header/board.h"
 #include"../header/input.h"
 #include<stdbool.h>
-#include"../boty/boty.h"
 
 char running = 0;
 
@@ -16,7 +15,6 @@ void app_init() {
 	interface_init();
 	input_init();
 	interface_printMenu();
-	Bot_Init();
 	running = 1;
 }
 
