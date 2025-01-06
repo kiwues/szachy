@@ -1,8 +1,8 @@
-#include"header/chessPieces.h"
-#include"header/board.h"
-#include"header/interface.h"
+#include"../header/chessPieces.h"
+#include"../header/board.h"
+#include"../header/interface.h"
 #include<stdio.h>
-#include"header/game.h"
+#include"../header/game.h"
 #include<float.h>
 
 
@@ -22,53 +22,53 @@ const float checkWeight = 0.1f;
 
 
 
-float CalculateCaptureScore(char* board, char* captureMask) {
+float CalculateCaptureScore(char* board,char* captureMask) {
 	float score = 0;
 	for (char index = 0; index < 64; index++) {
 		if (captureMask[index / 8] & (128 >> (index % 8))) {
 			char piece = index % 2 ? (board[index / 2] >> 4) : (board[index / 2] & 15);
-			if ((piece & CHESSMASK))
-				score += weights[(piece & CHESSMASK) - 1] * checkWeight;
+			if((piece&CHESSMASK))
+				score += weights[(piece & CHESSMASK) - 1]* checkWeight;
 			else
 				score += weights[(piece & CHESSMASK) - 1];
 		}
 	}
-	return score * captureWeight;
+	return score* captureWeight;
 }
 
-float Bot_Evaluation(ChessBoard* board) {
+float Bot1_Evaluation(ChessBoard* board) {
 	float wScore = 0;
 	float bScore = 0;
 	for (char index = 0; index < 64; index++)
 	{
-		char piece = getPieceFromBoard(index % 8, index / 8, board);
+		char piece = getPieceFromBoardPtr(index%8,index/8,board);
 		if (piece == 0)continue;
 		char moveMask[8] = { 0 };
 		char captureMask[8] = { 0 };
 		if (piece & BLACK) {
-			bScore += weights[(piece & CHESSMASK) - 1] + weights[(piece & CHESSMASK) - 1] * getAmountOfLegalMovesOnBoard(index % 8, index / 8, &moveMask, &captureMask, board) * moveWeight + CalculateCaptureScore(board, captureMask);
+			bScore += weights[(piece & CHESSMASK) - 1] +weights[(piece & CHESSMASK)-1]* getAmountOfLegalMovesOnBoardPtr(index%8,index/8,&moveMask,&captureMask,board)* moveWeight +CalculateCaptureScore(board,captureMask);
 		}
 		else {
-			wScore += weights[(piece & CHESSMASK) - 1] + weights[(piece & CHESSMASK) - 1] * getAmountOfLegalMovesOnBoard(index % 8, index / 8, &moveMask, &captureMask, board) * moveWeight + CalculateCaptureScore(board, captureMask);
+			wScore += weights[(piece & CHESSMASK) - 1] +weights[(piece & CHESSMASK)-1] * getAmountOfLegalMovesOnBoardPtr(index % 8, index / 8, &moveMask, &captureMask,board)* moveWeight + CalculateCaptureScore(board, captureMask);
 		}
 	}
 	return (wScore - bScore);
 }
 
-float Search(ChessBoard* board, char depth, char color, float alpha, float beta, char* pick, char* dest) {
-	if (depth == 0) return (color & board->round == color ? -1 : 1) * Bot_Evaluation(board);
+float Search(ChessBoard* board,char depth, char color,float alpha, float beta,char* pick, char* dest) {
+	if (depth == 0) return (color&board->round==color ? -1 : 1) * Bot1_Evaluation(board);
 	ChessBoard boardCopy;
 	char notImportant = 0;
 	memcpy(&boardCopy, board, sizeof(ChessBoard));
 	for (char i = 0; i < 64; i++) {
-		if (!!(getPieceFromBoard(i % 8, i / 8, &boardCopy) & BLACK) == boardCopy.round) {
+		if (!!(getPieceFromBoardPtr(i % 8, i / 8, &boardCopy) & BLACK) == boardCopy.round) {
 			char moveMask[8] = { 0 };
 			char captureMask[8] = { 0 };
-			getLegalMoves(i % 8, i / 8, &moveMask, &captureMask, &boardCopy);
+			getLegalMoves(i % 8, i / 8, &moveMask, &captureMask,&boardCopy);
 			for (char j = 0; j < 64; j++)
 			{
 				if (!(captureMask[j / 8] & (128 >> (j % 8)))) continue;
-				simulatePieceMoveOnBoard(i % 8, i / 8, j % 8, j / 8, &boardCopy);
+				simulatePieceMoveOnBoardPtr(i % 8, i / 8, j % 8, j / 8, &boardCopy);
 				boardCopy.round = !boardCopy.round;
 				float eval = -Search(&boardCopy, depth - 1, color, -beta, -alpha, &notImportant, &notImportant);
 				/*interface_drawWholeBoard(&boardCopy);
@@ -89,7 +89,7 @@ float Search(ChessBoard* board, char depth, char color, float alpha, float beta,
 			for (char j = 0; j < 64; j++)
 			{
 				if (!(moveMask[j / 8] & (128 >> (j % 8)))) continue;
-				simulatePieceMoveOnBoard(i % 8, i / 8, j % 8, j / 8, &boardCopy);
+				simulatePieceMoveOnBoardPtr(i % 8, i / 8, j % 8, j / 8, &boardCopy);
 				boardCopy.round = !boardCopy.round;
 				float eval = -Search(&boardCopy, depth - 1, color, -beta, -alpha, &notImportant, &notImportant);
 				/*interface_drawWholeBoard(&boardCopy);
@@ -113,15 +113,9 @@ float Search(ChessBoard* board, char depth, char color, float alpha, float beta,
 	return alpha;
 }
 
-void Bot_MakeMove(char botId, ChessBoard* board) {
-	char src = 0;
-	char dest = 0;
-	float eval = Search(board, 3, !!(botId & 127), -FLT_MAX, FLT_MAX, &src, &dest);
+void Bot1_MakeMove(char* src, char* dest) {
+	ChessBoard* board = getBoardPtr();
+	float eval = Search(board, 3, !!(botId & 127), -FLT_MAX,FLT_MAX,src, dest);
 	//interface_drawWholeBoard(board);
-	pickupAndPlacePiece(src >> 4, src & 15, dest >> 4, dest & 15, board);
-	//float eval = Evaluation(board);
-	wchar_t debugMessage[50];
-	swprintf(debugMessage, sizeof(debugMessage) / sizeof(wchar_t), L"Eval: %f\n move: (%d;%d), (%d;%d)", eval, src >> 4, src & 15, dest >> 4, dest & 15);
-	interface_writeDebug(debugMessage);
 
 }

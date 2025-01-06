@@ -24,12 +24,7 @@ set(SOURCES
     "header/interface.h"
     "header/window.h"
     "header/game.h"
-    "source/game.c"     
-    "bot.c"
-    "header/magicBitboard.h"
-    "source/magicBitboard.c"
-    "magic_numbers.h"
- )
+ "source/game.c" "boty/boty.h" "boty/bot1.h" "boty/boty.c" "boty/bot1.c")
 
 # Conditionally exclude files for Linux
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
