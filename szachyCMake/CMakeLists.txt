@@ -29,7 +29,7 @@ set(SOURCES
     "header/magicBitboard.h"
     "source/magicBitboard.c"
     "magic_numbers.h"
- )
+  "header/linkedList.h")
 
 # Conditionally exclude files for Linux
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")

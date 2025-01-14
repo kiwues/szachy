@@ -37,3 +37,5 @@ char checkIfCheckmateOrStalemateWhileChecked(char color, ChessBoard* board);
 int getAmountOfLegalMoves(char x, char y, char* moveMask, char* captureMask);
 int getAmountOfLegalMovesOnBoard(char x, char y, char* moveMask, char* captureMask, ChessBoard* board);
 void setBitmaps(ChessBoard* board);
+int MaskBitCount(uint64_t mask);
+int getIndexOfFirstBit(uint64_t* bitmap);

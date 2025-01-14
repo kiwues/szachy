@@ -261,7 +261,7 @@ void getMaskOfPiece(char piece,char x, char y, uint64_t* moveBitmask,uint64_t* c
 			*moveBitmask |= temp;
 		}*/
 		*moveBitmask = MGBishop[x + y * 8].ptr[0];
-		*moveBitmask ^= (1ull << (y * 8 + x));
+		//*moveBitmask ^= (1ull << (y * 8 + x));
 		*moveBitmask &= board->allBitmap;
 	    GetMagicMaskForBishop(x + y * 8, moveBitmask);
 		*captureBitmask = *moveBitmask;

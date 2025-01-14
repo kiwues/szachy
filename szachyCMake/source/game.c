@@ -4,7 +4,7 @@
 #include"../bot.h"
 
 char gameStarted = 0;
-char botId = 0;
+char botColor = -1;
 ChessBoard displayBoard={0};
 
 void StartNewGame() {
@@ -15,14 +15,14 @@ void StartNewGame() {
 }
 
 void BotMove() {
-	if (botId && !!(botId & 128) == displayBoard.round) {
-		Bot_MakeMove(botId & 127,&displayBoard);
+	if (botColor == displayBoard.round) {
+		Bot_MakeMove(botColor,&displayBoard);
 	}
 }
 
 void NextRound() {
 	displayBoard.check = checkIfCheck(!displayBoard.round, &displayBoard) * (displayBoard.round + 1);
-	char mateStale = checkIfCheckmateOrStalemateWhileChecked(displayBoard.round ? 0 : 8,&displayBoard);
+	/*char mateStale = checkIfCheckmateOrStalemateWhileChecked(displayBoard.round ? 0 : 8, &displayBoard);
 	if (mateStale) {
 		if (mateStale == 1) {
 			interface_showEnd(displayBoard.round ? 0 : 8);
@@ -31,7 +31,7 @@ void NextRound() {
 			interface_showEnd(-1);
 		}
 		gameStarted = 0;
-	}
+	}*/
 	displayBoard.round = !displayBoard.round;
 	BotMove();
 }
