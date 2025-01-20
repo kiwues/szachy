@@ -180,7 +180,7 @@ void input_loop() {
         case '2':
         {
             StartNewGame();
-            botId = 129;//color:black botid:1 
+            botColor = 1;//color:black botid:1 
             BotMove();
         }
         break;

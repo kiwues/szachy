@@ -223,11 +223,11 @@ void interface_printMenu() {
 	wprintf(L"ESC-Exit\n");
 }
 
-void interface_showEnd(char color) {
+void interface_showEnd(GameState check) {
 	moveCursorToBoard(0, 12);
-	if(color>=0)
-		wprintf(L"Win for the %ls!", color ? L"white" : L"black");
-	else 
+	if(check<5)
+		wprintf(L"Win for the %ls!", check==black_checkmate ? L"white" : L"black");
+	else
 		wprintf(L"Stalemate!");
 }
 
@@ -280,7 +280,7 @@ void interface_writeDebug(wchar_t* text) {
 		xDebug = 12;
 		yDebug++;
 	}*/
-	wprintf(L"%s", text);
+	wprintf(L"%ls", text);
 	input_updateCursor();
 	fflush(stdout);
 }

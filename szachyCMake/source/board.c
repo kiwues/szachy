@@ -41,7 +41,7 @@ void InitBoard(ChessBoard* board) {
     //mainBoard = (ChessBoard){ .castling = 119,.enPassant = 0,.check = 0,.round = 0,.pawnPromotion = -1, .board = { 0 } };
 	board->castling = 119;
 	board->enPassant = 0;
-	board->check = 0;
+	board->check = normal;
 	board->round = 0;
 	board->pawnPromotion = -1;
     memcpy(&board->board, startingBoard, 64);
@@ -56,7 +56,7 @@ int getIndexOfFirstBit(uint64_t* bitmap) {
 #ifndef __linux__
 	_BitScanForward64(&index, *bitmap);
 #else 
-	__builtin_ctzll(*bitmap);
+	index = __builtin_ctzll(*bitmap);
 #endif
 	return index;
 }
@@ -75,7 +75,7 @@ char getSquareOfKing(char color, ChessBoard* board) {
 	return getIndexOfFirstBit(bitmap);
 }
 
-char checkIfCheck(char color, ChessBoard* board);
+GameState checkIfCheck(char color, ChessBoard* board);
 
 /*void getLegalMovesWithoutCheck(char xPick, char yPick, char* moveBitMask, char* captureBitMask, ChessBoard* board) {
 	char piece = getPieceFromBoard(xPick, yPick,board);
@@ -177,7 +177,7 @@ char checkIfCheck(char color, ChessBoard* board);
 }*/
 
 void getLegalMoves(char xPick, char yPick, uint64_t* moveBitmask, uint64_t* captureBitmask, ChessBoard* board) {
-	if ((board->round ? board->blackBitmaps.lockedPieces : board->whiteBitmaps.lockedPieces) & (1ull << (xPick + yPick * 8))) return;
+	//if ((board->round ? board->blackBitmaps.lockedPieces : board->whiteBitmaps.lockedPieces) & (1ull << (xPick + yPick * 8))) return;
 	char piece = getPieceFromBoard(xPick, yPick, board);
 
 	getMaskOfPiece(piece, xPick, yPick, moveBitmask, captureBitmask, board);
@@ -188,28 +188,37 @@ void getLegalMoves(char xPick, char yPick, uint64_t* moveBitmask, uint64_t* capt
 		*captureBitmask |= 1ull << (board->enPassant + ((piece & BLACK) ? 8 : -8));
 	}
 
+	if ((board->round ? board->blackBitmaps.lockedPieces : board->whiteBitmaps.lockedPieces) & (1ull << (xPick + yPick * 8))) {
+		*moveBitmask &= ((piece&BLACK) ? board->blackBitmaps.lockedPieces_move : board->whiteBitmaps.lockedPieces_move);
+		*captureBitmask &= ((piece&BLACK) ? board->blackBitmaps.lockedPieces_move : board->whiteBitmaps.lockedPieces_move);
+	}
+
+
 	if ((piece & CHESSMASK) == KING) {
 		uint64_t _moveBitmask = 0ull;
 		uint64_t _captureBitmask = 0ull;
 		uint64_t* _allMapPtr = (piece & BLACK) ? &board->blackBitmaps.all : &board->whiteBitmaps.all;
 		uint64_t _allMap = *_allMapPtr;
 
-		*_allMapPtr |= *moveBitmask;
+		//*_allMapPtr |= *moveBitmask;
+		uint64_t attackMask = 0ull;
 		for (char i = 0; i < 64; i++) {
 			if (board->board[i] && (board->board[i] & BLACK) != (piece & BLACK) && ((i % 8) != xPick && (i / 8) != yPick)) {
 				if ((board->board[i] & CHESSMASK) == KING) {
 					getMaskOfPiece(board->board[i], i % 8, i / 8, &_moveBitmask, &_captureBitmask, board);
 				}else
 				getLegalMoves(i % 8, i / 8, &_moveBitmask, &_captureBitmask, board);
-				*moveBitmask &= ~_captureBitmask;
-				*captureBitmask &= ~_captureBitmask;
+				attackMask|= _captureBitmask;
+				attackMask |= _moveBitmask;
 			}
 		}
-		*_allMapPtr = _allMap;
+		*moveBitmask &= ~attackMask;
+		*captureBitmask &= ~attackMask;
+		//*_allMapPtr = _allMap;
 	}
 
-	if (board->check) {
-		if (board->round) {
+	if (board->check!=normal) {
+		if ((piece&BLACK)) {
 			if ((piece & CHESSMASK) != KING)
 				*moveBitmask &= board->blackBitmaps.squaresToDefend;
 			else
@@ -373,8 +382,10 @@ void ChangeBitboard(char piecePicked, char x, char y, char withAllBitboardsUpate
 
 void movePieceOnBoard(char sourceX, char sourceY, char destinationX, char destinationY, ChessBoard* board) {
 	char piece = getPieceFromBoard(sourceX, sourceY,board);
+	char piece2 = getPieceFromBoard(destinationX, destinationY, board);
 	setPieceOnBoard(sourceX, sourceY, 0,board);
-	ChangeBitboard(piece, sourceX, sourceY, 0,board);
+	ChangeBitboard(piece, sourceX, sourceY ,0,board);
+	if (piece2 != 0) ChangeBitboard(piece2, destinationX, destinationY, 0, board);
 	setPieceOnBoard(destinationX, destinationY, piece,board);
 	ChangeBitboard(piece, destinationX, destinationY,1, board);
 }
@@ -392,19 +403,29 @@ uint64_t getLineBetween(char xFrom,char yFrom,char xTo, char yTo) {
 	return mask;
 }
 
-uint64_t createAttackersBitboard(char kingIndex,uint64_t sliderAttackers){
+uint64_t createAttackersBitboard(char kingIndex,uint64_t sliderAttackers,uint64_t* defenderAllPieces){
 	uint64_t mask=0ull;
+	uint64_t temp=0ull;
 	while (sliderAttackers) {
 		char index = getIndexOfFirstBit(&sliderAttackers);
-		mask |= getLineBetween(kingIndex % 8, kingIndex / 8, index % 8, index / 8);
+		temp = getLineBetween(kingIndex % 8, kingIndex / 8, index % 8, index / 8);
+		if (*defenderAllPieces != 0 ) {
+			if (MaskBitCount(temp & *defenderAllPieces)==1) mask |= temp;
+		}
+		else {
+			mask |= temp;
+		}
+		
 		sliderAttackers &= (sliderAttackers - 1);
 	}
 	return mask;
 }
 
 
-char checkIfCheck(char color,ChessBoard* board) {
-	char kingPos = getSquareOfKing(color,board);
+
+//error on 2r4r/p1pk2pp/4p3/5N2/3Q4/8/PPb1BPPP/R1B1K2R b KQ - 1 17
+GameState checkIfCheck(char color,ChessBoard* board) {
+	unsigned char kingPos = getSquareOfKing(color,board);
 	char kingPosX = kingPos %8;
 	char kingPosY = kingPos /8;
 	uint64_t mask[4] = { 0ull };
@@ -419,37 +440,42 @@ char checkIfCheck(char color,ChessBoard* board) {
 	mask[3] &= (color ? (board->whiteBitmaps.rook | board->whiteBitmaps.queen) : (board->blackBitmaps.rook | board->blackBitmaps.queen));
 	uint64_t attackers =mask[0]|mask[1]|mask[2]|mask[3];
 
-	uint64_t attackLine=createAttackersBitboard(kingPos,mask[2]|mask[3]);//squares to block
+	uint64_t attackers2 = 0ull;
+	uint64_t attackLine=createAttackersBitboard(kingPos,mask[2]|mask[3],&attackers2);//squares to block
 
 	board->allBitmap = color ? board->whiteBitmaps.all : board->blackBitmaps.all;
+	uint64_t lockedPieces = 0ull;
 	getMaskOfPiece(BISHOP, kingPosX, kingPosY, &temp, &mask[2], board);
 	getMaskOfPiece(ROOK, kingPosX, kingPosY, &temp, &mask[3], board);
-	attackers = mask[2] & (color?board->whiteBitmaps.bishop:board->blackBitmaps.bishop);//attackers but blocked
-	uint64_t lockedPieces = 0ull;
-	if (MaskBitCount(attackers) == 1)
-		lockedPieces |= attackers;
+	attackers2 = (mask[2] & (color?board->whiteBitmaps.bishop| board->whiteBitmaps.queen :board->blackBitmaps.bishop| board->blackBitmaps.queen))|(mask[3] & (color ? board->whiteBitmaps.rook| board->whiteBitmaps.queen : board->blackBitmaps.rook| board->blackBitmaps.queen));//attackers but blocked
 
-	attackers = mask[3] & (color ? board->whiteBitmaps.rook : board->blackBitmaps.rook);//attackers but blocked
-	if (MaskBitCount(attackers) == 1)
-		lockedPieces |= attackers;
+	lockedPieces = createAttackersBitboard(kingPos,attackers2,(color?&board->blackBitmaps.all:&board->whiteBitmaps.all));
 
-	attackers = (mask[3]|mask[2]) & (color ? board->whiteBitmaps.queen : board->blackBitmaps.queen);//attackers but blocked
-	if (MaskBitCount(attackers) == 1)
-		lockedPieces |= attackers;
+	/*attackers2 = mask[3] & (color ? board->whiteBitmaps.rook : board->blackBitmaps.rook);//attackers but blocked
+	if (MaskBitCount(attackers2) == 1)
+		lockedPieces |= attackers2;
+
+	attackers2 = (mask[3]|mask[2]) & (color ? board->whiteBitmaps.queen : board->blackBitmaps.queen);//attackers but blocked
+	if (MaskBitCount(attackers2) == 1)
+		lockedPieces |= attackers2;*/
 
 	board->allBitmap = board->blackBitmaps.all | board->whiteBitmaps.all;
 	//lockedPieces &= color ? board->blackBitmaps.all : board->whiteBitmaps.all;//locked pieces
 
 
 	if(color){
-		board->blackBitmaps.lockedPieces = lockedPieces;
+		board->blackBitmaps.lockedPieces = lockedPieces & board->blackBitmaps.all;
+		board->blackBitmaps.lockedPieces_move = lockedPieces ;
 		board->blackBitmaps.squaresToDefend = attackLine ? attackLine : UINT64_MAX;
 	}
 	else {
-		board->whiteBitmaps.lockedPieces = lockedPieces;
+		board->whiteBitmaps.lockedPieces = lockedPieces &  board->whiteBitmaps.all;
+		board->whiteBitmaps.lockedPieces_move = lockedPieces;
 		board->whiteBitmaps.squaresToDefend = attackLine ? attackLine : UINT64_MAX;
 	}
-	return !!attackers;
+	board->check = color?(attackers?black_check:normal):(attackers?white_check:normal);
+	board->check = checkIfCheckmateOrStalemate(color, !!attackers,board);
+	return board->check;
 
 	/*char moveBitmask[8] = {0};
 	char captureBitmask[8] = { 0 };
@@ -466,21 +492,20 @@ char checkIfCheck(char color,ChessBoard* board) {
 	return 0;*/
 }
 
-//0-none 1-checkmate 2-stalemate 
-char checkIfCheckmateOrStalemateWhileChecked(char color, ChessBoard* board) {
+GameState checkIfCheckmateOrStalemate(char color, char check,ChessBoard* board) {
 	uint64_t moveBitmask = 0ull;
 	uint64_t captureBitmask = 0ull;
 	for(char x=0;x<8;x++)
 		for (char y = 0; y < 8; y++) {
 			char piece = getPieceFromBoard(x, y,board);
-			if ((piece & BLACK) == color)
+			if (!!(piece & BLACK) == color)
 			{
 				getLegalMoves(x, y, &moveBitmask, &captureBitmask,board);
-				if ((moveBitmask | captureBitmask)) return 0;
+				if ((moveBitmask | captureBitmask)) return color?(check?black_check:normal):(check?white_check:normal);
 			}
 		}
 
-	return !!!board->check + 1;
+	return color?(check?black_checkmate:black_stalemate):(check?white_checkmate:white_stalemate);
 }
 
 
@@ -489,8 +514,8 @@ void pickupPiece(char x, char y, ChessBoard* board) {
 	if (board->pawnPromotion!=-1) {
 		if ((y != -1 && y  != 8)) return;
 		setPieceOnBoard(board->pawnPromotion >> 4, board->pawnPromotion & 15, ((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0),board);
-		ChangeBitboard(((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15, 1, board);
-		ChangeBitboard(PAWN| (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15, 1, board);
+		ChangeBitboard(((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15, 0, board);
+		ChangeBitboard(PAWN| (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15,1, board);
 		interface_clearPawnPromotion();
 		//interface_renderPiece(pawnPromotion >> 4, pawnPromotion & 15);
 		NextRound();
@@ -521,7 +546,6 @@ void pickupPiece(char x, char y, ChessBoard* board) {
 			interface_showPawnPromotion(x, y);
 		}
 		else {
-			NextRound();
 			if ((piece&CHESSMASK) == ROOK) {
 				if (xPicked == 0) {
 					board->castling &= ~(1 << ((piece & BLACK) ? 6 : 2));
@@ -536,6 +560,7 @@ void pickupPiece(char x, char y, ChessBoard* board) {
 			else if ((piece & CHESSMASK) == PAWN&&abs(yPicked-y)==2) {
 				board->enPassant = x + y * 8;
 			}
+			NextRound();
 		}
 		xPicked = -1;
 
@@ -589,16 +614,9 @@ void simulatePieceMoveOnBoard(char xSrc, char ySrc, char xDst, char yDst, ChessB
 	}
 }
 
-unsigned char BitCount(unsigned char byte) {
-	static const unsigned char NIBBLE_LOOKUP[16] =
-	{
-	  0, 1, 1, 2, 1, 2, 2, 3,
-	  1, 2, 2, 3, 2, 3, 3, 4
-	};
-	return NIBBLE_LOOKUP[byte & 0x0F] + NIBBLE_LOOKUP[byte >> 4];
-}
 
-int getAmountOfLegalMoves(char x, char y,char *moveMask,char *captureMask) 
+
+/*int getAmountOfLegalMoves(char x, char y, char* moveMask, char* captureMask)
 {
 	getLegalMoves(x, y, moveMask, captureMask,&displayBoard);
 	int amount = 0;
@@ -616,7 +634,7 @@ int getAmountOfLegalMovesOnBoard(char x, char y, uint64_t* moveMask, char* captu
 		amount += BitCount(moveMask[i]);//+ BitCount(captureMask[i])
 	}
 	return amount;
-}
+}*/
 
 void setBitmaps(ChessBoard* board) {
     for (char x = 0; x < 8; x++) {
@@ -677,22 +695,22 @@ void ChangeBitboard(char piecePicked, char x, char y,char withAllBitboardsUpate,
     uint64_t* bitBoardPicked = NULL;
     switch (piecePicked & CHESSMASK) {
         case PAWN:
-            bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.pawn : &board->whiteBitmaps.pawn;
+            bitBoardPicked = (piecePicked & BLACK) ? &board->blackBitmaps.pawn : &board->whiteBitmaps.pawn;
             break;
         case KNIGHT:
-            bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.knight : &board->whiteBitmaps.knight;
+            bitBoardPicked = (piecePicked & BLACK) ? &board->blackBitmaps.knight : &board->whiteBitmaps.knight;
             break;
         case BISHOP:
-            bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.bishop : &board->whiteBitmaps.bishop;
+            bitBoardPicked = (piecePicked & BLACK) ? &board->blackBitmaps.bishop : &board->whiteBitmaps.bishop;
             break;
         case ROOK:
-            bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.rook : &board->whiteBitmaps.rook;
+            bitBoardPicked = (piecePicked & BLACK) ? &board->blackBitmaps.rook : &board->whiteBitmaps.rook;
             break;
         case QUEEN:
             bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.queen : &board->whiteBitmaps.queen;
             break;
         case KING:
-            bitBoardPicked = piecePicked & BLACK ? &board->blackBitmaps.king : &board->whiteBitmaps.king;
+            bitBoardPicked = (piecePicked & BLACK) ? &board->blackBitmaps.king : &board->whiteBitmaps.king;
             break;
         default:
             return; 

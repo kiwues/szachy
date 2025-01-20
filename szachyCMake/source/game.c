@@ -21,17 +21,12 @@ void BotMove() {
 }
 
 void NextRound() {
-	displayBoard.check = checkIfCheck(!displayBoard.round, &displayBoard) * (displayBoard.round + 1);
-	/*char mateStale = checkIfCheckmateOrStalemateWhileChecked(displayBoard.round ? 0 : 8, &displayBoard);
-	if (mateStale) {
-		if (mateStale == 1) {
-			interface_showEnd(displayBoard.round ? 0 : 8);
-		}
-		else {
-			interface_showEnd(-1);
-		}
+	checkIfCheck(!displayBoard.round, &displayBoard);
+	if (displayBoard.check > 2) {
+		interface_showEnd(displayBoard.check);
 		gameStarted = 0;
-	}*/
+		return;
+	}
 	displayBoard.round = !displayBoard.round;
 	BotMove();
 }

@@ -21,7 +21,7 @@ void getMaskOfPiece(char piece,char x, char y, uint64_t* moveBitmask,uint64_t* c
 			*moveBitmask &= ~9259542123273814144ull;
 		}
 		*captureBitmask = *moveBitmask;
-		if (board->check ||x!=4||!((board->castling >> ((piece & 8) ? 4 : 0)) & 1)||((piece&8)&&y!=0)||((!(piece&8))&&y!=7)) break;
+		if (board->check!=normal ||x!=4||!((board->castling >> ((piece & 8) ? 4 : 0)) & 1)||((piece&8)&&y!=0)||((!(piece&8))&&y!=7)) break;
 
 
 		if (piece & 8) {

@@ -69,7 +69,7 @@ float Search(ChessBoard* board, char depth, char color, float alpha, float beta,
 	char notImportant = 0;
 	memcpy(&boardCopy, board, sizeof(ChessBoard));
 	for (char i = 0; i < 64; i++) {
-		if (!!(board->board[i] & BLACK) == boardCopy.round) {
+		if ((!!(board->board[i] & BLACK)) == boardCopy.round) {
 			uint64_t moveMask = 0ull;
 			uint64_t captureMask = 0ull;
 			getLegalMoves(i % 8, i / 8, &moveMask, &captureMask, &boardCopy);
