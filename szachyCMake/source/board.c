@@ -445,18 +445,18 @@ element_listy* GetAllMovesFor(char color, ChessBoard* board) {
 	char piece = 0;
 	for (int i = 0; i < 64; i++) {
 		piece = board->board[i];
-		if (!!(piece & BLACK) == color) {
+		if ((!!(piece & BLACK)) == color) {
 			getLegalMoves(i % 8, i / 8, &moveBitmask, &captureBitmask, board);
 			while (captureBitmask) {
 				int moveIndex = getIndexOfFirstBit(&captureBitmask);
 				captureBitmask &= (captureBitmask - 1);
-				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8 };
+				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8 ,.promotionPiece=20};
 				lista_dodaj(head, move);
 			}
 			while (moveBitmask) {
 				int moveIndex = getIndexOfFirstBit(&moveBitmask);
 				moveBitmask &= (moveBitmask - 1);
-				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8 };
+				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8,.promotionPiece=20 };
 				lista_dodaj(head, move);
 			}
 			captureBitmask = 0;

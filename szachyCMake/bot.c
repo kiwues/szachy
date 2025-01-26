@@ -54,59 +54,45 @@ float Bot_Evaluation(ChessBoard* board) {
 	}
 	if (board->check == black_checkmate) 			return FLT_MAX;
 	else if (board->check == white_checkmate)			return -FLT_MAX;
-	else return (wScore - bScore);
+	else if (board->check > 4) return 0;
+	else return (board->round?-1:1)*(wScore - bScore);
 }
 
-float Search(ChessBoard* board, char depth, char color, float alpha, float beta, Move* bestMove) {
+float Search(ChessBoard* board, char depth, float alpha, float beta, Move* bestMove) {
 	if (depth == 0||board->check>2) {
 		return Bot_Evaluation(board);//(color & board->round == color ? -1 : 1) * 
 	}
 	ChessBoard boardCopy;
 	Move notImportant;
-	boardCopy = *board;
-	element_listy* move = GetAllMovesFor(color, &boardCopy);
+	element_listy* move = GetAllMovesFor(board->round, board);
 	element_listy* moves_head = move;
 	do {
+		boardCopy = *board;
 		//pawn promotion
 		simulatePieceMoveOnBoard(move->move.xFrom, move->move.yFrom, move->move.xTo, move->move.yTo, &boardCopy);
-		if (color&&move->move.xTo == 7 && (CHESSMASK & getPieceFromBoard(move->move.xTo, move->move.yTo, &boardCopy)) == PAWN) {
+		if ((boardCopy.round &&move->move.xTo == 7 && (CHESSMASK & getPieceFromBoard(move->move.xTo, move->move.yTo, &boardCopy)) == PAWN)||
+			(!boardCopy.round && move->move.xTo == 0 && (CHESSMASK & getPieceFromBoard(move->move.xTo, move->move.yTo, &boardCopy)) == PAWN)) {
 			for (int i = 0; i < 4; i++) {
-				PromotePawn(move->move.xTo, move->move.yTo, (QUEEN+i) | BLACK, &boardCopy);
+				PromotePawn(move->move.xTo, move->move.yTo, (QUEEN+i) | (boardCopy.round ?BLACK:0), &boardCopy);
 				boardCopy.round = !boardCopy.round;
 				checkIfCheck(boardCopy.round, &boardCopy);
-				float eval = -Search(&boardCopy, depth - 1, color, -beta, -alpha, &notImportant);
+				float eval = -Search(&boardCopy, depth - 1, -beta, -alpha, &notImportant);
 				if (eval >= beta) {
+					lista_zwolnij(move);
 					return beta;
 				}
 				if (alpha < eval) {
 					*bestMove = move->move;
+					bestMove->promotionPiece = QUEEN + i;
 					alpha = eval;
 				}
 				boardCopy = *board;
 			}
 			continue;
-			
-		}else
-		if (!color&&move->move.xTo == 0 && (CHESSMASK & getPieceFromBoard(move->move.xTo, move->move.yTo, &boardCopy)) == PAWN) {
-			for (int i = 0; i < 4; i++) {
-				PromotePawn(move->move.xTo, move->move.yTo, (QUEEN + i) | BLACK, &boardCopy);
-				boardCopy.round = !boardCopy.round;
-				checkIfCheck(boardCopy.round, &boardCopy);
-				float eval = -Search(&boardCopy, depth - 1, color, -beta, -alpha, &notImportant);
-				if (eval >= beta) {
-					return beta;
-				}
-				if (alpha < eval) {
-					*bestMove = move->move;
-					alpha = eval;
-				}
-				boardCopy = *board;
-			}
-			continue;
-		}	
+		}
 		boardCopy.round = !boardCopy.round;
 		checkIfCheck(boardCopy.round, &boardCopy);
-		float eval = -Search(&boardCopy, depth - 1, color, -beta, -alpha, &notImportant);
+		float eval = -Search(&boardCopy, depth - 1, -beta, -alpha, &notImportant);
 
 		/*interface_drawWholeBoard(&boardCopy);
 		wchar_t debugMessage[100];
@@ -114,13 +100,13 @@ float Search(ChessBoard* board, char depth, char color, float alpha, float beta,
 		interface_writeDebug(debugMessage);
 		SLEEP(1000);*/
 		if (eval >= beta) {
+			lista_zwolnij(move);
 			return beta;
 		}
 		if (alpha < eval) {
 			*bestMove = move->move;
 			alpha = eval;
 		}
-		boardCopy = *board;
 	} while (move->nastepny != NULL && (move = lista_usun_ity(move, 0)));//(move = lista_usun_ity(move,0)) (move = move->nastepny)
 	//lista_zwolnij(moves_head);
 	lista_zwolnij(move);
@@ -135,12 +121,15 @@ void Bot_MakeMove(char botColor, int depth,ChessBoard* board) {
     int cpu_time_used;
 
     start = clock();
-    float eval = Search(board, depth, botColor, -FLT_MAX, FLT_MAX, &bestMove);
+    float eval = Search(board, depth, -FLT_MAX, FLT_MAX, &bestMove);
     end = clock();
 
     cpu_time_used = ((int) (end - start));
 
     pickupAndPlacePiece(bestMove.xFrom, bestMove.yFrom, bestMove.xTo, bestMove.yTo, board);
+	if (bestMove.promotionPiece != 20) {
+		pickupPiece(bestMove.xFrom+3-bestMove.promotionPiece, bestMove.yTo+(botColor?1:-1), board);
+	}
     wchar_t debugMessage[100];
     swprintf(debugMessage, sizeof(debugMessage) / sizeof(wchar_t), L"Ocena: %f ruch: (%c%d) do (%c%d), glebokosc: %d, czas: %d ms", eval, 'A' + (7 - bestMove.xFrom) , bestMove.yFrom+1,  'A'+(7-bestMove.xTo), bestMove.yTo + 1, depth, cpu_time_used);
     interface_writeDebug(debugMessage);

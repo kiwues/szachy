@@ -3,7 +3,7 @@
 #include<stdlib.h>
 
 typedef struct Move {
-    char xFrom, yFrom, xTo, yTo;
+    char xFrom, yFrom, xTo, yTo,promotionPiece;
 } Move;
 
 
