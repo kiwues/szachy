@@ -21,6 +21,8 @@ char cursor_x = 0;
 int offsetBoardx = 35;
 int offsetBoardy = 2;
 
+char enterDepth = 0;
+
 
 
 void moveCursorTo(char x, char y) {
@@ -163,7 +165,27 @@ void gameControls(int ch) {
 
 
 void input_loop() {
-
+    if (enterDepth==1) {
+        int _depth = 0;
+        wscanf(L"%d", &_depth);
+        depth = _depth;
+        enterDepth = 2;
+        wprintf(L"Wybierz kolor:\n1-Bialy\n2-Czarny\n");
+        return;
+    }
+    else if (enterDepth == 2) {
+#ifdef __linux__
+        int ch = getch();
+#else
+        int ch = _getch();
+#endif
+        if (ch == '1')botColor = 1;//color:black
+        else if (ch == '2')botColor = 0;
+        enterDepth = 0;
+        StartNewGame();
+        BotMove();
+        return;
+    }
 #ifdef __linux__
     int ch = getch();
 #else
@@ -179,9 +201,14 @@ void input_loop() {
             break;
         case '2':
         {
-            StartNewGame();
-            botColor = 1;//color:black botid:1 
-            BotMove();
+            enterDepth = 1;
+#ifdef __linux__
+            system("clear");
+#else 	
+            system("cls");
+#endif
+            wprintf(L"Wprowadz glebokosc wyszukiwania (zalecane 3-4 wiecej zabiera duzo ramu)");
+
         }
         break;
         case '3': {

@@ -6,6 +6,7 @@
 char gameStarted = 0;
 char botColor = -1;
 ChessBoard displayBoard={0};
+int depth = 3;
 
 void StartNewGame() {
 	InitBoard(&displayBoard);
@@ -16,7 +17,7 @@ void StartNewGame() {
 
 void BotMove() {
 	if (botColor == displayBoard.round) {
-		Bot_MakeMove(botColor,&displayBoard);
+		Bot_MakeMove(botColor,depth,&displayBoard);
 	}
 }
 

@@ -323,25 +323,23 @@ void getMaskOfPiece(char piece,char x, char y, uint64_t* moveBitmask,uint64_t* c
 		if (!(piece & 8)) {
 			if (y >0) {
 				*moveBitmask = 1ull << ((y - 1) * 8 + x);
-				if (y == 6)
+				if (y == 6&&!getPieceFromBoard(x,y-1,board))
 					*moveBitmask |= 1ull << ((y - 2) * 8 + x);
+				*captureBitmask = 5ull << (x - 1) + (y*8 - 8);
+				if (x == 0 && y == 0) *captureBitmask = 2ull;
 			}
 		}
 		else {
 			if (y < 7) {
 				*moveBitmask = 1ull << ((y + 1) * 8 + x);
-				if (y == 1)
+				if (y == 1 && !getPieceFromBoard(x, y+1, board))
 					*moveBitmask |= 1ull << ((y + 2) * 8 + x);
+				*captureBitmask = 5ull << (x - 1) + (y*8 + 8);
+
 			}
 		}
-		if (y == 0 && x == 0) {
-			*captureBitmask = 2ull;
-		}
-		else {
-			*captureBitmask = 5ull << (x - 1) + (y + ((piece & 8) ? 1 : -1)) * 8;
-			if (x == 0) *captureBitmask &= 0x7f7f7f7f7f7f7f7full;
-			else if (x == 7) *captureBitmask &= 0xfefefefefefefefeull;
-		}
+		if (x == 0) *captureBitmask &= 0x303030303030303ull;
+		else if (x == 7) *captureBitmask &= 0xc0c0c0c0c0c0c0c0ull;
 		break;
 	default:
 		break;

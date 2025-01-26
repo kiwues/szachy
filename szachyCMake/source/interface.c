@@ -29,9 +29,6 @@ void restoreTerminal() {
 
 
 const wchar_t* chess_pieces_characters[13] = {L"0m ",L"255m♚", L"255m♛", L"255m♜", L"255m♝", L"255m♞", L"255m♟", L"0m♚", L"0m♛", L"0m♜", L"0m♝", L"0m♞", L"0m♟"};
-//const wchar_t* chess_pieces_characters[13] = {L"0m ", L"0m♚", L"0m♛", L"0m♜", L"0m♝", L"0m♞", L"0m♟",L"255m♚", L"255m♛", L"255m♜", L"255m♝", L"255m♞", L"255m♟"};
-//const wchar_t* chess_pieces_characters[13] = {L" ",L"♔", L"♕", L"♖", L"♗", L"♘", L"♙", L"♚", L"♛", L"♜", L"♝", L"♞", L"♟"};
-
 char update = 1;
 
 char lastCursor_x=-1;
@@ -42,7 +39,7 @@ uint64_t drawingCaptureBitmask =0ull;
 
 char isDrawingBitmask = 0;
 
-char xDebug=0, yDebug=10;
+char xDebug=-10, yDebug=10;
 
 void interface_init() {
 #ifndef __linux__
@@ -217,18 +214,19 @@ void interface_showLegalMovesOfCurrentPiece(char x, char y) {
 
 
 void interface_printMenu() {
-	wprintf(L"1-Start new game vs player\n");
-	wprintf(L"2-Start new game vs bot\n");
-	wprintf(L"3-Find magic numbers\n");
-	wprintf(L"ESC-Exit\n");
+	wprintf(L"1-Rozpocznij grę przeciwko graczowi\n");
+	wprintf(L"2-Rozpocznij grę przeciwko botowi\n");
+	//wprintf(L"3-Find magic numbers\n");
+	wprintf(L"ESC-Wyjście\n");
+	wprintf(L"\n\nSterowanie:\nstrzałki-poruszanie kurosrem\nspacja-akceptacja ruchu do kursora\n");
 }
 
 void interface_showEnd(GameState check) {
 	moveCursorToBoard(0, 12);
 	if(check<5)
-		wprintf(L"Win for the %ls!", check==black_checkmate ? L"white" : L"black");
+		wprintf(L"Wygrana dla %ls!", check==black_checkmate ? L"białych" : L"czarnych");
 	else
-		wprintf(L"Stalemate!");
+		wprintf(L"Pat!");
 }
 
 void interface_showPawnPromotion(char x, char y) {

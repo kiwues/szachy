@@ -8,20 +8,7 @@
 #include<intrin.h>
 #endif
 #include"../header/magicBitboard.h"
-//#include"../header/magicBitboard.h"
 
-//x = chessPiece2<<4|chessPiece1
-/*const char startingBoard[32] =
-{
-	189,202,156,219,
-	238,238,238,238,
-	0,0,0,0,
-	0,0,0,0,
-	0,0,0,0,
-	0,0,0,0,
-	102,102,102,102,
-	53,66,20,83
-};*/
 const char startingBoard[64] =
 {
 	BLACK | ROOK, BLACK | KNIGHT, BLACK | BISHOP, BLACK | QUEEN, BLACK | KING, BLACK | BISHOP, BLACK | KNIGHT, BLACK | ROOK,
@@ -38,7 +25,6 @@ char xPicked=-1, yPicked;
 
 
 void InitBoard(ChessBoard* board) {
-    //mainBoard = (ChessBoard){ .castling = 119,.enPassant = 0,.check = 0,.round = 0,.pawnPromotion = -1, .board = { 0 } };
 	board->castling = 119;
 	board->enPassant = 0;
 	board->check = normal;
@@ -77,107 +63,7 @@ char getSquareOfKing(char color, ChessBoard* board) {
 
 GameState checkIfCheck(char color, ChessBoard* board);
 
-/*void getLegalMovesWithoutCheck(char xPick, char yPick, char* moveBitMask, char* captureBitMask, ChessBoard* board) {
-	char piece = getPieceFromBoard(xPick, yPick,board);
-	char pieceColor = piece & BLACK;
-    if ((piece & CHESSMASK) == KNIGHT) {
-		char pieceOnBoard;
-		for (char i = 0; i < 4; i++) {
-			char x1 = xPick + (i % 2 ? -1 : 1);
-			char x2 = xPick + (i % 2 ? -2 : 2);
-			char y1 = yPick + (i > 1 ? -2 : 2);
-			char y2 = yPick + (i > 1 ? -1 : 1);
-			if (!(x1 < 0 || x1>7 || y1 < 0 || y1>7) && ((pieceOnBoard = getPieceFromBoard(x1, y1,board)) == 0 || pieceColor != (pieceOnBoard & BLACK)) ) {
-				if (pieceOnBoard == 0)
-					moveBitMask[y1] |= 128 >> (x1);
-				else
-					captureBitMask[y1] |= 128 >> (x1);
-			}
-			if (!(x2 < 0 || x2>7 || y2 < 0 || y2>7) && ((pieceOnBoard = getPieceFromBoard(x2, y2,board)) == 0 || pieceColor != (pieceOnBoard & BLACK))) {
-				if (pieceOnBoard == 0)
-					moveBitMask[y2] |= 128 >> (x2);
-				else
-					captureBitMask[y2] |= 128 >> (x2);
-			}
-		}
-		return;
-	}
-	if ((piece & CHESSMASK) == PAWN) {
-		char colorSide = pieceColor ? 1 : -1;
-		if (!((!pieceColor && yPick < 1) || (pieceColor && yPick > 6))) {
-			char pieceCkeck;
-			if ((pieceCkeck=getPieceFromBoard(xPick - 1, yPick + colorSide,board))&&(pieceCkeck&BLACK)!=pieceColor)
-				captureBitMask[yPick + colorSide] |= 128 >> (xPick - 1);
-			if ((pieceCkeck = getPieceFromBoard(xPick + 1, yPick + colorSide,board)) && (pieceCkeck & BLACK) != pieceColor)
-				captureBitMask[yPick + colorSide] |= 128 >> (xPick + 1);
-			if (board->enPassant && ((board->enPassant & 15) == yPick) && abs((board->enPassant >> 4) - xPick) == 1) {
-				captureBitMask[yPick + colorSide] |= 128 >> (board->enPassant >> 4);
-			}
-		}
-	}
-	uint64_t mask = 0;
-	getMaskOfPiece(piece, xPick, yPick, &mask);//directions: up-1, down-2, right-3, left-4, up-right-5, up-left-6, down-right-7, down-left-8
-	char direction = 8;
-	char x=xPick, y=yPick;
-	while (direction) {
-		switch (direction)
-		{
-		case 1:
-			y--;
-			break;
-		case 2:
-			y++;
-			break;
-		case 3:
-			x++;
-			break;
-		case 4:
-			x--;
-			break;
-		case 5:
-			x++;
-			y--;
-			break;
-		case 6:
-			x--;
-			y--;
-			break;
-		case 7:
-			x++;
-			y++;
-			break;
-		case 8:
-			x--;
-			y++;
-			break;
-		default:
-			break;
-		}
-		if (x < 0 || x>7 || y < 0 || y>7) {
-			direction--;
-			x = xPick;
-			y = yPick;
-			continue;
-		}
-		if (mask[y]&(128>>x)) {
-			char pieceOnBoard = getPieceFromBoard(x, y,board);
-			if (pieceOnBoard == 0) {
-				moveBitMask[y] |= 128 >> x;
-				continue;
-			}else
-			if ((pieceOnBoard&BLACK)!=pieceColor && (piece & CHESSMASK) != PAWN) {
-				captureBitMask[y] |= 128 >> x;
-			}
-		}
-		direction--;
-		x = xPick;
-		y = yPick;
-	}
-	return;
-}*/
-
 void getLegalMoves(char xPick, char yPick, uint64_t* moveBitmask, uint64_t* captureBitmask, ChessBoard* board) {
-	//if ((board->round ? board->blackBitmaps.lockedPieces : board->whiteBitmaps.lockedPieces) & (1ull << (xPick + yPick * 8))) return;
 	char piece = getPieceFromBoard(xPick, yPick, board);
 
 	getMaskOfPiece(piece, xPick, yPick, moveBitmask, captureBitmask, board);
@@ -200,7 +86,7 @@ void getLegalMoves(char xPick, char yPick, uint64_t* moveBitmask, uint64_t* capt
 		uint64_t* _allMapPtr = (piece & BLACK) ? &board->blackBitmaps.all : &board->whiteBitmaps.all;
 		uint64_t _allMap = *_allMapPtr;
 
-		//*_allMapPtr |= *moveBitmask;
+		*_allMapPtr ^= 1ull << (xPick + yPick * 8);
 		uint64_t attackMask = 0ull;
 		for (char i = 0; i < 64; i++) {
 			if (board->board[i] && (board->board[i] & BLACK) != (piece & BLACK) && ((i % 8) != xPick && (i / 8) != yPick)) {
@@ -214,155 +100,27 @@ void getLegalMoves(char xPick, char yPick, uint64_t* moveBitmask, uint64_t* capt
 		}
 		*moveBitmask &= ~attackMask;
 		*captureBitmask &= ~attackMask;
-		//*_allMapPtr = _allMap;
+		*_allMapPtr ^= 1ull << (xPick + yPick * 8);
 	}
 
 	if (board->check!=normal) {
 		if ((piece&BLACK)) {
 			if ((piece & CHESSMASK) != KING)
 				*moveBitmask &= board->blackBitmaps.squaresToDefend;
-			else
+			else if(board->blackBitmaps.squaresToDefend != UINT64_MAX)
 				*moveBitmask &= ~board->blackBitmaps.squaresToDefend;
 			*captureBitmask &= board->blackBitmaps.squaresToDefend;
 		}
 		else {
 			if ((piece & CHESSMASK) != KING)
 				*moveBitmask &= board->whiteBitmaps.squaresToDefend;
-			else if(~board->whiteBitmaps.squaresToDefend!=UINT64_MAX){
+			else if(board->whiteBitmaps.squaresToDefend!=UINT64_MAX){
 				*moveBitmask &= ~board->whiteBitmaps.squaresToDefend;
 			}
 			*captureBitmask &= board->whiteBitmaps.squaresToDefend;
 
 		}
 	}
-
-	/*if ((piece & CHESSMASK) == KING && !(board->check || !(board->castling >> ((piece & BLACK) ? 4 : 0) & 1))) {//castling
-		if ((board->castling >> ((piece & BLACK) ? 1 : 5) & 1) && (((piece & BLACK) ? 96ull : 0x6000000000000000ull) & (~board->allBitmap))) { //right
-			if (!checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 3, yPick, board) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 2, yPick, board))
-			{
-				pieceMask |= 1ull << (xPick + 2) + yPick * 8;
-			}
-		}
-		if ((board->castling >> ((piece & BLACK) ? 2 : 4) & 1) && (((piece & BLACK) ? 14ull : 0xe00000000000000ull) & (~board->allBitmap))) { //left
-			if (!checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 5, yPick, board) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 6, yPick, board))
-			{
-				pieceMask |= 1ull << (xPick - 2) + yPick * 8;
-			}
-		}
-	}*/
-	/*char piece = getPieceFromBoard(xPick, yPick, board);
-	char pieceColor = piece & BLACK;
-	//char counterPieceColor = ~pieceColor&BLACK;
-	if ((piece & CHESSMASK) == KNIGHT) {
-		char pieceOnBoard;
-		for (char i = 0; i < 4; i++) {
-			char x1 = xPick + (i % 2 ? -1 : 1);
-			char x2 = xPick + (i % 2 ? -2 : 2);
-			char y1 = yPick + (i > 1 ? -2 : 2);
-			char y2 = yPick + (i > 1 ? -1 : 1);
-			if (!(x1 < 0 || x1>7 || y1 < 0 || y1>7) && ((pieceOnBoard = getPieceFromBoard(x1, y1,board)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, x1, y1,board)) {
-				if (pieceOnBoard == 0)
-					moveBitMask[y1] |= 128 >> (x1);
-				else
-					captureBitMask[y1] |= 128 >> (x1);
-			}
-			if (!(x2 < 0 || x2>7 || y2 < 0 || y2>7) && ((pieceOnBoard = getPieceFromBoard(x2, y2,board)) == 0 || pieceColor != (pieceOnBoard & BLACK)) && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, x2, y2,board)) {
-				if (pieceOnBoard == 0)
-					moveBitMask[y2] |= 128 >> (x2);
-				else
-					captureBitMask[y2] |= 128 >> (x2);
-			}
-		}
-		return;
-	}
-
-	if ((piece & CHESSMASK) == PAWN) {
-		char colorSide = pieceColor ? 1 : -1;
-		if (!((!pieceColor && yPick < 1) || (pieceColor && yPick > 6))) {
-			char pieceCkeck;
-			if ((pieceCkeck = getPieceFromBoard(xPick - 1, yPick + colorSide,board)) && (pieceCkeck & BLACK) != pieceColor&&!checkIfCheckOnChangedBoard(pieceColor,xPick,yPick,xPick-1,yPick+colorSide,board))
-				captureBitMask[yPick + colorSide] |= 128 >> (xPick - 1);
-			if ((pieceCkeck = getPieceFromBoard(xPick + 1, yPick + colorSide, board)) && (pieceCkeck & BLACK) != pieceColor && !checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, xPick + 1, yPick + colorSide,board))
-				captureBitMask[yPick + colorSide] |= 128 >> (xPick + 1);
-			if (board->enPassant && ((board->enPassant & 15) == yPick) && abs((board->enPassant >> 4) - xPick) == 1) {
-				captureBitMask[yPick + colorSide] |= 128 >> (board->enPassant >> 4);
-			}
-		}
-	}
-	char mask[8] = { 0 };
-	getMaskOfPiece(piece, xPick, yPick, &mask);//directions: up-1, down-2, right-3, left-4, up-right-5, up-left-6, down-right-7, down-left-8
-	char direction = 8;
-	char x = xPick, y = yPick;
-	while (direction) {
-		switch (direction)
-		{
-		case 1:
-			y--;
-			break;
-		case 2:
-			y++;
-			break;
-		case 3:
-			x++;
-			break;
-		case 4:
-			x--;
-			break;
-		case 5:
-			x++;
-			y--;
-			break;
-		case 6:
-			x--;
-			y--;
-			break;
-		case 7:
-			x++;
-			y++;
-			break;
-		case 8:
-			x--;
-			y++;
-			break;
-		default:
-			break;
-		}
-		if (x < 0 || x>7 || y < 0 || y>7) {
-			direction--;
-			x = xPick;
-			y = yPick;
-			continue;
-		}
-		if (mask[y] & (128 >> x)) {
-			char pieceOnBoard = getPieceFromBoard(x, y,board);
-			if (!checkIfCheckOnChangedBoard(pieceColor, xPick, yPick, x, y,board)) {
-				if (pieceOnBoard == 0) {
-					moveBitMask[y] |= 128 >> x;
-					continue;
-				}
-				else if ((pieceOnBoard & BLACK) != pieceColor && (piece & CHESSMASK) != PAWN) {
-					captureBitMask[y] |= 128 >> x;
-				}
-			}
-		}
-		direction--;
-		x = xPick;
-		y = yPick;
-	}
-	if ((piece & CHESSMASK) == KING&&!board->check) {
-		if ((128 >> ((piece & BLACK) ? 5 : 1)) & board->castling) { //left rook
-			if (!getPieceFromBoard(xPick - 1, yPick,board) && !getPieceFromBoard(xPick - 2, yPick,board) && !getPieceFromBoard(xPick - 3, yPick,board)&&!checkIfCheckOnChangedBoard(piece&BLACK,xPick,yPick,3,yPick,board)&& !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 2, yPick,board))
-			{
-				moveBitMask[yPick] |= 128 >> 2;
-			}
-		}
-		if ((128 >> ((piece & BLACK) ? 6 : 2)) & board->castling) { //right rook
-            if (!getPieceFromBoard(xPick + 1, yPick,board) && !getPieceFromBoard(xPick + 2, yPick,board) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 5, yPick, board) && !checkIfCheckOnChangedBoard(piece & BLACK, xPick, yPick, 6, yPick, board))
-			{
-				moveBitMask[yPick] |= 2;
-			}
-		}
-	}*/
 	return;
 }
 
@@ -374,7 +132,6 @@ char isLegalMove(char xPick, char yPick, char xDest, char yDest,ChessBoard* boar
 }
 
 void setPieceOnBoard(char x, char y, char piece,ChessBoard* board) {
-	//boardRepresentation[(x / 2)*8+y] = (boardRepresentation[(x / 2)*8+y] & (240 >> (!(x % 2) * 4)))|(piece<<!(x%2)*4);
 	board->board[y * 8 + x ] = piece;
 }
 
@@ -390,16 +147,16 @@ void movePieceOnBoard(char sourceX, char sourceY, char destinationX, char destin
 	ChangeBitboard(piece, destinationX, destinationY,1, board);
 }
 
-uint64_t getLineBetween(char xFrom,char yFrom,char xTo, char yTo) {
+uint64_t getLineBetween(char xFrom,char yFrom,char xTo, char yTo) {// 4,4 to 4,0
 	//jest lepszy sposob na to
 	uint64_t mask = 0ull;
-	char xDelta = (xTo - xFrom);
+	int8_t xDelta = (xTo - xFrom);
 	if(xDelta!=0)
 	xDelta /= abs(xDelta);
-	char yDelta = yTo - yFrom;
+	int8_t yDelta = yTo - yFrom;
 	if (yDelta != 0)
 	yDelta /= abs(yDelta);
-	for (char x = xFrom+xDelta, y = yFrom+yDelta; x != xTo+xDelta && y != yTo+yDelta; mask |= 1ull << (y * 8 + x),x += xDelta, y += yDelta);//&&(!getPieceFromBoard(x,y,board))
+	for (char x = xFrom, y = yFrom; (x != xTo || y != yTo); mask |= 1ull << (y * 8 + x),x += xDelta, y += yDelta);//&&(!getPieceFromBoard(x,y,board))
 	return mask;
 }
 
@@ -408,7 +165,7 @@ uint64_t createAttackersBitboard(char kingIndex,uint64_t sliderAttackers,uint64_
 	uint64_t temp=0ull;
 	while (sliderAttackers) {
 		char index = getIndexOfFirstBit(&sliderAttackers);
-		temp = getLineBetween(kingIndex % 8, kingIndex / 8, index % 8, index / 8);
+		temp = getLineBetween(index % 8, index / 8,kingIndex % 8, kingIndex / 8);
 		if (*defenderAllPieces != 0 ) {
 			if (MaskBitCount(temp & *defenderAllPieces)==1) mask |= temp;
 		}
@@ -423,7 +180,6 @@ uint64_t createAttackersBitboard(char kingIndex,uint64_t sliderAttackers,uint64_
 
 
 
-//error on 2r4r/p1pk2pp/4p3/5N2/3Q4/8/PPb1BPPP/R1B1K2R b KQ - 1 17
 GameState checkIfCheck(char color,ChessBoard* board) {
 	unsigned char kingPos = getSquareOfKing(color,board);
 	char kingPosX = kingPos %8;
@@ -451,16 +207,7 @@ GameState checkIfCheck(char color,ChessBoard* board) {
 
 	lockedPieces = createAttackersBitboard(kingPos,attackers2,(color?&board->blackBitmaps.all:&board->whiteBitmaps.all));
 
-	/*attackers2 = mask[3] & (color ? board->whiteBitmaps.rook : board->blackBitmaps.rook);//attackers but blocked
-	if (MaskBitCount(attackers2) == 1)
-		lockedPieces |= attackers2;
-
-	attackers2 = (mask[3]|mask[2]) & (color ? board->whiteBitmaps.queen : board->blackBitmaps.queen);//attackers but blocked
-	if (MaskBitCount(attackers2) == 1)
-		lockedPieces |= attackers2;*/
-
 	board->allBitmap = board->blackBitmaps.all | board->whiteBitmaps.all;
-	//lockedPieces &= color ? board->blackBitmaps.all : board->whiteBitmaps.all;//locked pieces
 
 
 	if(color){
@@ -476,20 +223,6 @@ GameState checkIfCheck(char color,ChessBoard* board) {
 	board->check = color?(attackers?black_check:normal):(attackers?white_check:normal);
 	board->check = checkIfCheckmateOrStalemate(color, !!attackers,board);
 	return board->check;
-
-	/*char moveBitmask[8] = {0};
-	char captureBitmask[8] = { 0 };
-	for(char x=0;x<8;x++)
-		for (char y=0; y < 8; y++) {
-			char piece = getPieceFromBoard(x, y,board);
-			if ((piece & BLACK)!=color)
-			{
-				getLegalMovesWithoutCheck(x, y, &moveBitmask, &captureBitmask,board);
-				if ((captureBitmask[kingPosY] & (128 >> kingPosX)))
-					return 1;
-			}
-		}
-	return 0;*/
 }
 
 GameState checkIfCheckmateOrStalemate(char color, char check,ChessBoard* board) {
@@ -508,16 +241,19 @@ GameState checkIfCheckmateOrStalemate(char color, char check,ChessBoard* board) 
 	return color?(check?black_checkmate:black_stalemate):(check?white_checkmate:white_stalemate);
 }
 
+void PromotePawn(char x, char y, char piece, ChessBoard* board) {
+	setPieceOnBoard(x, y, piece, board);
+	ChangeBitboard(piece, x, y, 0, board);
+	ChangeBitboard(PAWN | (y == 7 ? BLACK : 0), x, y, 1, board);
+}
+
 
 
 void pickupPiece(char x, char y, ChessBoard* board) {
 	if (board->pawnPromotion!=-1) {
 		if ((y != -1 && y  != 8)) return;
-		setPieceOnBoard(board->pawnPromotion >> 4, board->pawnPromotion & 15, ((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0),board);
-		ChangeBitboard(((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15, 0, board);
-		ChangeBitboard(PAWN| (y == 8 ? BLACK : 0), board->pawnPromotion >> 4, board->pawnPromotion & 15,1, board);
+		PromotePawn(board->pawnPromotion >> 4, board->pawnPromotion & 15, ((board->pawnPromotion >> 4) + 3 - x) | (y == 8 ? BLACK : 0), board);
 		interface_clearPawnPromotion();
-		//interface_renderPiece(pawnPromotion >> 4, pawnPromotion & 15);
 		NextRound();
 	}else
 	if (xPicked != -1&& isLegalMove(xPicked, yPicked, x, y,board)) {
@@ -614,28 +350,6 @@ void simulatePieceMoveOnBoard(char xSrc, char ySrc, char xDst, char yDst, ChessB
 	}
 }
 
-
-
-/*int getAmountOfLegalMoves(char x, char y, char* moveMask, char* captureMask)
-{
-	getLegalMoves(x, y, moveMask, captureMask,&displayBoard);
-	int amount = 0;
-	for (char i = 0; i < 8; i++) {
-		amount += BitCount(moveMask[i]) ;//+ BitCount(captureMask[i])
-	}
-	return amount;
-}
-
-int getAmountOfLegalMovesOnBoard(char x, char y, uint64_t* moveMask, char* captureMask,ChessBoard* board)
-{
-	getLegalMoves(x, y, moveMask, captureMask,board);
-	int amount = 0;
-	for (char i = 0; i < 8; i++) {
-		amount += BitCount(moveMask[i]);//+ BitCount(captureMask[i])
-	}
-	return amount;
-}*/
-
 void setBitmaps(ChessBoard* board) {
     for (char x = 0; x < 8; x++) {
         for (char y = 0; y < 8; y++) {
@@ -722,4 +436,33 @@ void ChangeBitboard(char piecePicked, char x, char y,char withAllBitboardsUpate,
 		board->whiteBitmaps.all ^= 1ull << (y * 8 + x);
 	if (!withAllBitboardsUpate) return;
 	board->allBitmap =board->blackBitmaps.all|board->whiteBitmaps.all;
+}
+
+element_listy* GetAllMovesFor(char color, ChessBoard* board) {
+	element_listy* head = (element_listy*)calloc(1, sizeof(element_listy));
+	uint64_t moveBitmask = 0ull;
+	uint64_t captureBitmask = 0ull;
+	char piece = 0;
+	for (int i = 0; i < 64; i++) {
+		piece = board->board[i];
+		if (!!(piece & BLACK) == color) {
+			getLegalMoves(i % 8, i / 8, &moveBitmask, &captureBitmask, board);
+			while (captureBitmask) {
+				int moveIndex = getIndexOfFirstBit(&captureBitmask);
+				captureBitmask &= (captureBitmask - 1);
+				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8 };
+				lista_dodaj(head, move);
+			}
+			while (moveBitmask) {
+				int moveIndex = getIndexOfFirstBit(&moveBitmask);
+				moveBitmask &= (moveBitmask - 1);
+				Move move = { .xFrom = i % 8,.yFrom = i / 8,.xTo = moveIndex % 8,.yTo = moveIndex / 8 };
+				lista_dodaj(head, move);
+			}
+			captureBitmask = 0;
+			moveBitmask = 0;
+		}
+	}
+	head = lista_usun_ity(head, 0);
+	return head;
 }

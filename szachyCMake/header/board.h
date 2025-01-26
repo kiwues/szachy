@@ -1,13 +1,14 @@
 #pragma once
 #include<stdint.h>
+#include"../header/linkedList.h"
 
 typedef enum{
 	normal,
 	white_check,
 	black_check,
-	white_checkmate,
-	black_checkmate,
-	white_stalemate,
+	white_checkmate,//wygrana dla czarnych
+	black_checkmate,//wygrana dla bialych
+	white_stalemate, 
 	black_stalemate
 }GameState;
 
@@ -41,13 +42,13 @@ typedef struct ChessBoard {
 char getPieceFromBoard(char x, char y, ChessBoard* board);
 void InitBoard(ChessBoard* board);
 void pickupPiece(char x, char y, ChessBoard* board);
-void pickupAndPlacePiece(char xSrc, char ySrc,char xDst,char yDst, ChessBoard* board);
+void pickupAndPlacePiece(char xSrc, char ySrc, char xDst, char yDst, ChessBoard* board);
 void simulatePieceMoveOnBoard(char xSrc, char ySrc, char xDst, char yDst, ChessBoard* board);
 void getLegalMoves(char xPick, char yPick, uint64_t* moveBitMask, uint64_t* captureBitMask, ChessBoard* board);
 GameState checkIfCheck(char color, ChessBoard* board);
-char checkIfCheckmateOrStalemateWhileChecked(char color, ChessBoard* board);
-//int getAmountOfLegalMoves(char x, char y, char* moveMask, char* captureMask);
-//int getAmountOfLegalMovesOnBoard(char x, char y, char* moveMask, char* captureMask, ChessBoard* board);
+GameState checkIfCheckmateOrStalemate(char color, char check, ChessBoard* board);
 void setBitmaps(ChessBoard* board);
 int MaskBitCount(uint64_t mask);
 int getIndexOfFirstBit(uint64_t* bitmap);
+element_listy* GetAllMovesFor(char color, ChessBoard* board);
+void PromotePawn(char x, char y, char piece, ChessBoard* board);
