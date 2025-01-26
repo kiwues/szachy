@@ -43,7 +43,7 @@ char getPieceFromBoard(char x, char y, ChessBoard* board);
 void InitBoard(ChessBoard* board);
 void pickupPiece(char x, char y, ChessBoard* board);
 void pickupAndPlacePiece(char xSrc, char ySrc, char xDst, char yDst, ChessBoard* board);
-void simulatePieceMoveOnBoard(char xSrc, char ySrc, char xDst, char yDst, ChessBoard* board);
+void simulatePieceMoveOnBoard(Move* move, ChessBoard* board);
 void getLegalMoves(char xPick, char yPick, uint64_t* moveBitMask, uint64_t* captureBitMask, ChessBoard* board);
 GameState checkIfCheck(char color, ChessBoard* board);
 GameState checkIfCheckmateOrStalemate(char color, char check, ChessBoard* board);

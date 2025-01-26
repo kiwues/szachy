@@ -198,6 +198,7 @@ GameState checkIfCheck(char color,ChessBoard* board) {
 
 	uint64_t attackers2 = 0ull;
 	uint64_t attackLine=createAttackersBitboard(kingPos,mask[2]|mask[3],&attackers2);//squares to block
+	attackLine |= attackers;
 
 	board->allBitmap = color ? board->whiteBitmaps.all : board->blackBitmaps.all;
 	uint64_t lockedPieces = 0ull;
@@ -213,12 +214,12 @@ GameState checkIfCheck(char color,ChessBoard* board) {
 	if(color){
 		board->blackBitmaps.lockedPieces = lockedPieces & board->blackBitmaps.all;
 		board->blackBitmaps.lockedPieces_move = lockedPieces ;
-		board->blackBitmaps.squaresToDefend = attackLine ? attackLine : UINT64_MAX;
+		board->blackBitmaps.squaresToDefend = (attackLine ) ? (attackLine ) : UINT64_MAX;
 	}
 	else {
 		board->whiteBitmaps.lockedPieces = lockedPieces &  board->whiteBitmaps.all;
 		board->whiteBitmaps.lockedPieces_move = lockedPieces;
-		board->whiteBitmaps.squaresToDefend = attackLine ? attackLine : UINT64_MAX;
+		board->whiteBitmaps.squaresToDefend = ((attackLine) ? (attackLine) : UINT64_MAX);
 	}
 	board->check = color?(attackers?black_check:normal):(attackers?white_check:normal);
 	board->check = checkIfCheckmateOrStalemate(color, !!attackers,board);
@@ -316,37 +317,41 @@ void pickupAndPlacePiece(char xSrc, char ySrc, char xDst, char yDst, ChessBoard*
 	pickupPiece(xSrc, ySrc, board);
 	pickupPiece(xDst, yDst, board);
 }
-void simulatePieceMoveOnBoard(char xSrc, char ySrc, char xDst, char yDst, ChessBoard* board) {
-	char piece = getPieceFromBoard(xSrc, ySrc, board);
-	movePieceOnBoard(xSrc, ySrc, xDst, yDst, board);
+void simulatePieceMoveOnBoard(Move* move, ChessBoard* board) {
+	char piece = getPieceFromBoard(move->xFrom, move->yFrom, board);
+	movePieceOnBoard(move->xFrom, move->yFrom, move->xTo, move->yTo, board);
+	if (move->promotionPiece!=20) {
+		PromotePawn(move->xTo, move->yTo, move->promotionPiece, board);
+		return;
+	}
 	if (board->enPassant) {
-		if ((piece & CHESSMASK) == PAWN && (getPieceFromBoard(xDst, yDst + ((piece & BLACK) ? -1 : 1), board) & CHESSMASK) == PAWN) {
-			setPieceOnBoard(xDst, yDst + ((piece & BLACK) ? -1 : 1), 0, board);
+		if ((piece & CHESSMASK) == PAWN && (getPieceFromBoard(move->xTo, move->yTo + ((piece & BLACK) ? -1 : 1), board) & CHESSMASK) == PAWN) {
+			setPieceOnBoard(move->xTo, move->yTo + ((piece & BLACK) ? -1 : 1), 0, board);
 			ChangeBitboard(piece ^ BLACK, board->enPassant % 8, board->enPassant / 8, 1, board);
 		}
 		board->enPassant = 0;
 	}
 	if ((piece & CHESSMASK) == KING) {
-		if (xDst - xSrc == 2) { //castle wtith right rook
-			movePieceOnBoard(7, ySrc, 5, ySrc, board);
+		if (move->xTo - move->xFrom == 2) { //castle wtith right rook
+			movePieceOnBoard(7, move->yFrom, 5, move->yFrom, board);
 		}
-		else if (xSrc - xDst == 2) {//castle wtith left rook
-			movePieceOnBoard(0, ySrc, 3, ySrc, board);
+		else if (move->xFrom - move->xTo == 2) {//castle wtith left rook
+			movePieceOnBoard(0, move->yFrom, 3, move->yFrom, board);
 		}
 	}
 	if ((piece & CHESSMASK) == ROOK) {
-		if (xSrc == 0) {
+		if (move->xFrom == 0) {
 			board->castling &= ~(1 << ((piece & BLACK) ? 6 : 2));
 		}
-		else if (xSrc == 7) {
+		else if (move->xFrom == 7) {
 			board->castling &= ~(1 << ((piece & BLACK) ? 5 : 1));
 		}
 	}
 	else if ((piece & CHESSMASK) == KING) {
 		board->castling &= 7 << ((piece & BLACK) ? 0 : 4);
 	}
-	else if ((piece & CHESSMASK) == PAWN && abs(ySrc - yDst) == 2) {
-		board->enPassant = xDst + yDst * 8;
+	else if ((piece & CHESSMASK) == PAWN && abs(move->yFrom - move->yTo) == 2) {
+		board->enPassant = move->xTo + move->yTo * 8;
 	}
 }
 

@@ -208,7 +208,6 @@ void interface_showLegalMovesOfCurrentPiece(char x, char y) {
 	uint64_t bitMask = 0;
 	uint64_t captureMask = 0ull;
 	getLegalMoves(x, y,&bitMask,&captureMask,&displayBoard);
-	//getMaskOfPiece(getPieceFromBoard(cursorPos >> 8, cursorPos & 255), cursorPos >> 8, cursorPos & 255, &bitMask);
 	interface_showBitmask(&bitMask,&captureMask);
 }
 
@@ -272,12 +271,6 @@ void interface_renderPiece(char x, char y) {
 }
 void interface_writeDebug(wchar_t* text) {
 	moveCursorToBoard(xDebug, yDebug);
-	/*xDebug += strlen(text);
-	if (xDebug > 30)
-	{
-		xDebug = 12;
-		yDebug++;
-	}*/
 	wprintf(L"%ls", text);
 	input_updateCursor();
 	fflush(stdout);

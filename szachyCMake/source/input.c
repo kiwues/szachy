@@ -58,7 +58,6 @@ short getCursorPosition() {
 void gameControls(int ch) {
     switch (ch) {
     case 32:
-        //if (botId&&((botId & 128) >> 7) == round)break;
         pickupPiece(cursor_x, cursor_y, &displayBoard);
         break;
     case 27:
@@ -207,7 +206,7 @@ void input_loop() {
 #else 	
             system("cls");
 #endif
-            wprintf(L"Wprowadz glebokosc wyszukiwania (zalecane 3-4 wiecej zabiera duzo ramu)");
+            wprintf(L"Wprowadz glebokosc wyszukiwania (zalecane 5-6)");
 
         }
         break;
